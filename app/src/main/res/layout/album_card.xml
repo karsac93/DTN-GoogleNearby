@@ -8,30 +8,38 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
+        android:layout_margin="@dimen/card_margin"
         android:elevation="3dp"
-        android:layout_margin="5dp"
-        card_view:cardCornerRadius="0dp">
+        android:background="@android:color/darker_gray"
+        card_view:cardCornerRadius="@dimen/card_album_radius">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <ImageView android:id="@+id/thumbnail"
+            <ImageView
+                android:id="@+id/thumbnail"
                 android:layout_width="match_parent"
-                android:layout_height="160dp"
-                android:scaleType="fitXY"
+                android:layout_height="@dimen/album_cover_height"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true" />
+                android:clickable="true"
+                android:scaleType="fitXY" />
 
             <TextView
                 android:id="@+id/title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:text="Hello..." />
+                android:layout_below="@id/thumbnail"
+                android:paddingLeft="@dimen/album_title_padding"
+                android:paddingRight="@dimen/album_title_padding"
+                android:paddingTop="@dimen/album_title_padding"
+                android:paddingBottom="10dp"
+                android:textColor="@color/album_title"
+                android:textSize="@dimen/album_title"
+                android:gravity="center"/>
 
-        </LinearLayout>
+
+        </RelativeLayout>
 
     </android.support.v7.widget.CardView>
 

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="info.androidhive.cardview.Settings">
+
+    <LinearLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:orientation="vertical">
+
+       <RadioGroup
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content">
+
+           <RadioButton
+               android:id="@+id/setting_push"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:text="@string/settings_push"
+               android:layout_margin="@dimen/settings_margin"
+               android:padding="@dimen/settings_padding"
+               android:textSize="20dp"
+               android:layoutDirection="rtl"/>
+
+           <RadioButton
+               android:id="@+id/setting_pull"
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:text="@string/settings_pull"
+               android:layout_marginLeft="@dimen/settings_margin"
+               android:layout_marginRight="@dimen/settings_margin"
+               android:layout_marginEnd="@dimen/settings_margin"
+               android:padding="@dimen/settings_padding"
+               android:textSize="20dp"
+               android:layoutDirection="rtl"/>
+
+       </RadioGroup>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

@@ -16,10 +16,11 @@
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
+            app:layout_collapseMode="pin"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
-            app:contentScrim="?attr/colorPrimary"
+            app:contentScrim="#009688"
             app:expandedTitleMarginEnd="64dp"
             app:expandedTitleMarginStart="48dp"
             app:expandedTitleTextAppearance="@android:color/transparent"
@@ -48,16 +49,16 @@
                         android:id="@+id/love_music"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="LOVE MUSIC"
+                        android:text="@string/backdrop_title"
                         android:textColor="@android:color/white"
-                        android:textSize="30dp" />
+                        android:textSize="@dimen/backdrop_title" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="This season top 20 albums"
+                        android:text="@string/backdrop_subtitle"
                         android:textColor="@android:color/white"
-                        android:textSize="18dp" />
+                        android:textSize="@dimen/backdrop_subtitle" />
 
                 </LinearLayout>
             </RelativeLayout>
