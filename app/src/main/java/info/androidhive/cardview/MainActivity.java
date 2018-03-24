@@ -65,8 +65,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
 
         initCollapsingToolbar();
 
-        Log.d("MAIN", "Inside onCreate");
-
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         albumList = new ArrayList<>();
@@ -86,14 +84,17 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             e.printStackTrace();
         }
 
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        intentFilter
-                .addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        intentFilter
-                .addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(this, getMainLooper(), null);
+//        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+//        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+//        intentFilter
+//                .addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+//        intentFilter
+//                .addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+//        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+//        channel = manager.initialize(this, getMainLooper(), null);
+        manager = GlobalAppActivity.manager;
+        channel = GlobalAppActivity.channel;
+        receiver = GlobalAppActivity.receiver;
         startRegistrationAndDiscovery();
     }
 
@@ -186,14 +187,14 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     @Override
     protected void onResume() {
         super.onResume();
-        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
-        registerReceiver(receiver, intentFilter);
+//        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
+//        registerReceiver(receiver, intentFilter);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(receiver);
+//        unregisterReceiver(receiver);
     }
 
     @Override
