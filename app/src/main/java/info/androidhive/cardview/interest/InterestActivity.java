@@ -1,18 +1,23 @@
 package info.androidhive.cardview.interest;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import info.androidhive.cardview.R;
 
@@ -31,10 +36,35 @@ public class InterestActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                ShowInterestDialog();
             }
         });
+    }
+
+    private void ShowInterestDialog() {
+        LayoutInflater layoutInflater = LayoutInflater.from(getApplicationContext());
+        View view = layoutInflater.inflate(R.layout.interest_dialog, null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(InterestActivity.this);
+        builder.setView(view);
+        EditText editText = (EditText) view.findViewById(R.id.interest);
+        TextView dialogTitle = (TextView) view.findViewById(R.id.dialog_title);
+        builder
+                .setCancelable(false)
+                .setPositiveButton("save", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogBox, int id) {
+                        Log.d("InterestAct", "Inside onclick");
+                    }
+                })
+                .setNegativeButton("cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialogBox, int id) {
+                                dialogBox.cancel();
+                            }
+                        });
+
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+
     }
 
 

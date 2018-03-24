@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
 
         initCollapsingToolbar();
 
+        Log.d("MAIN", "Inside onCreate");
+
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         albumList = new ArrayList<>();
