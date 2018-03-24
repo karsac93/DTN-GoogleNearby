@@ -8,4 +8,11 @@
     <string name="title_activity_settings">Settings</string>
     <string name="settings_push">Push Mode</string>
     <string name="settings_pull">Pull Mode</string>
+    <string name="settings_incentive">Remaining Incentive :</string>
+    <string name="title_activity_interest">Interest</string>
+
+    <string-array name="interest_drop">
+        <item>Self interest</item>
+        <item>Transient interest</item>
+    </string-array>
 </resources>

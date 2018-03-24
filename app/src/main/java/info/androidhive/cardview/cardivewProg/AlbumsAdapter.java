@@ -1,6 +1,7 @@
 package info.androidhive.cardview.cardivewProg;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import info.androidhive.cardview.interest.InterestActivity;
 import info.androidhive.cardview.R;
 
 /**
@@ -30,6 +32,17 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
             super(view);
             title = (TextView) view.findViewById(R.id.title);
             thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+            view.setOnClickListener(new View.OnClickListener() {
+                Intent intent = null;
+                @Override
+                public void onClick(View view) {
+                    switch (title.getText().toString()){
+                        case "Interest":
+                            intent = new Intent(mContext, InterestActivity.class);
+                            mContext.startActivity(intent);
+                    }
+                }
+            });
         }
     }
 
@@ -41,9 +54,8 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
+        final View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.album_card, parent, false);
-
         return new MyViewHolder(itemView);
     }
 

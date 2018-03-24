@@ -22,7 +22,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/album_cover_height"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
                 android:scaleType="fitXY" />
 
             <TextView
@@ -36,7 +35,8 @@
                 android:paddingBottom="10dp"
                 android:textColor="@color/album_title"
                 android:textSize="@dimen/album_title"
-                android:gravity="center"/>
+                android:gravity="center"
+                android:textStyle="bold|italic"/>
 
 
         </RelativeLayout>

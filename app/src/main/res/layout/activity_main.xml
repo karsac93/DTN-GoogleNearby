@@ -51,14 +51,16 @@
                         android:layout_height="wrap_content"
                         android:text="@string/backdrop_title"
                         android:textColor="@android:color/white"
-                        android:textSize="@dimen/backdrop_title" />
+                        android:textSize="@dimen/backdrop_title"
+                        android:textStyle="italic"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/backdrop_subtitle"
                         android:textColor="@android:color/white"
-                        android:textSize="@dimen/backdrop_subtitle" />
+                        android:textSize="@dimen/backdrop_subtitle"
+                        android:textStyle="italic"/>
 
                 </LinearLayout>
             </RelativeLayout>
