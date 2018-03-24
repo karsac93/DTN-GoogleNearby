@@ -18,6 +18,7 @@ public class InterestTables {
     private String timestamp;
     private String type;
 
+
     public static final String CREATE_TABLE_SELF =
             "CREATE TABLE " + TABLE_NAME_SELF + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"

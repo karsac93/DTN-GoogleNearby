@@ -61,6 +61,7 @@ public class InterestActivity extends AppCompatActivity {
 
             }
         });
+
         return true;
     }
 }
