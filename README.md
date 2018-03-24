@@ -1,3 +1,3 @@
 # DTN
-Project to include various material design features and implement Delay Tolerant Network using WIFI P2P, service discovery
+Project to include various material design features and implement Delay Tolerant Network using WIFI P2P Service Discovery
 
