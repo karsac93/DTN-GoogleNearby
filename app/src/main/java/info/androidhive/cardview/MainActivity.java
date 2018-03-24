@@ -84,17 +84,14 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
             e.printStackTrace();
         }
 
-//        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-//        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-//        intentFilter
-//                .addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-//        intentFilter
-//                .addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-//        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-//        channel = manager.initialize(this, getMainLooper(), null);
-        manager = GlobalAppActivity.manager;
-        channel = GlobalAppActivity.channel;
-        receiver = GlobalAppActivity.receiver;
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+        intentFilter
+                .addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+        intentFilter
+                .addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(this, getMainLooper(), null);
         startRegistrationAndDiscovery();
     }
 
