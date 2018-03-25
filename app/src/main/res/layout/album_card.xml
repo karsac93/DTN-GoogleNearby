@@ -33,10 +33,10 @@
                 android:paddingRight="@dimen/album_title_padding"
                 android:paddingTop="@dimen/album_title_padding"
                 android:paddingBottom="10dp"
-                android:textColor="@color/album_title"
+                android:textColor="@color/colorPrimary"
                 android:textSize="@dimen/album_title"
                 android:gravity="center"
-                android:textStyle="bold|italic"/>
+                android:textStyle="bold|italic" />
 
 
         </RelativeLayout>

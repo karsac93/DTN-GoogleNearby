@@ -8,4 +8,10 @@
     tools:context="info.androidhive.cardview.interest.InterestActivity"
     tools:showIn="@layout/activity_interest">
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/interest_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"/>
+
 </android.support.constraint.ConstraintLayout>

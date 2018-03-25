@@ -12,6 +12,7 @@
     <string name="title_activity_interest">Interest</string>
     <string name="lbl_new_interest_title">New Interest</string>
     <string name="hint_enter_interest">Enter your interest!</string>
+    <string name="delete">DELETE</string>
 
     <string-array name="interest_drop">
         <item>Self interest</item>
