@@ -8,7 +8,7 @@ import android.content.Intent;
 
 public class Interest {
 
-    public static final String TABLE_NAME_SELF = "interestself";
+    public static final String TABLE_NAME_SELF = "selfinterest";
     public static final String TABLE_NAME_TRANSIENT = "interesttransient";
 
     public static final String COLUMN_ID = "id";
@@ -25,7 +25,7 @@ public class Interest {
             "CREATE TABLE " + TABLE_NAME_SELF + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + COLUMN_INTEREST + " TEXT,"
-                    + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP"
+                    + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
                     + INTEREST_VALUE + "REAL"
                     + ")";
 
@@ -33,7 +33,7 @@ public class Interest {
             "CREATE TABLE " + TABLE_NAME_TRANSIENT + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + COLUMN_INTEREST + " TEXT,"
-                    + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP"
+                    + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
                     + INTEREST_VALUE + "REAL"
                     + ")";
 

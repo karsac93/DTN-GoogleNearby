@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
-    public long insertSelfInterest(String interest, String type, float value) {
+    public long insertInterest(String interest, int type, float value) {
         long id = 0;
         String table_name = getTableName(type);
         SQLiteDatabase db = this.getWritableDatabase();
@@ -46,16 +47,16 @@ public class DbHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    public String getTableName(String type) {
+    public String getTableName(int type) {
         String table_name = null;
-        if (type.contains("self"))
+        if (type == 0)
             table_name = Interest.TABLE_NAME_SELF;
         else
             table_name = Interest.TABLE_NAME_TRANSIENT;
         return table_name;
     }
 
-    public List<Interest> getInterests(String type) {
+    public List<Interest> getInterests(int type) {
         List<Interest> interestList = new ArrayList<>();
         String table_name = getTableName(type);
 
@@ -76,7 +77,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return interestList;
     }
 
-    public int getCount(String type) {
+    public int getCount(int type) {
         String table_name = getTableName(type);
         String countQuery = "SELECT * FROM "+ table_name;
         SQLiteDatabase db = this.getWritableDatabase();
@@ -85,7 +86,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    public void deleteInterest(Interest interest, String type){
+    public void deleteInterest(Interest interest, int type){
         String table_name = getTableName(type);
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(table_name, Interest.COLUMN_ID  + "=?", new String[]{String.valueOf(interest.getId())});

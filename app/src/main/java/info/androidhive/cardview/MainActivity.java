@@ -248,21 +248,17 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
      */
     private void prepareAlbums() {
         int[] covers = new int[]{
-                R.drawable.gallery,
                 R.drawable.neighbours,
                 R.drawable.inbox,
                 R.drawable.interest};
 
-        Album a = new Album("Gallery", covers[0]);
+        Album a = new Album("Neighbours", covers[0]);
         albumList.add(a);
 
-        a = new Album("Neighbours", covers[1]);
+        a = new Album("Messages", covers[1]);
         albumList.add(a);
 
-        a = new Album("Inbox", covers[2]);
-        albumList.add(a);
-
-        a = new Album("Interest", covers[3]);
+        a = new Album("Interest", covers[2]);
         albumList.add(a);
 
         adapter.notifyDataSetChanged();

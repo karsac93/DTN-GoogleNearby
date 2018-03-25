@@ -70,6 +70,6 @@ public class InterestAdapter extends RecyclerView.Adapter<InterestAdapter.Intere
     public void restoreItem(Interest item, int position) {
         interestList.add(position, item);
         // notify item added by position
-        notifyDataSetChanged();
+        notifyItemChanged(position, item);
     }
 }
