@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import info.androidhive.cardview.GlobalApp;
 import info.androidhive.cardview.R;
 
 import static android.support.v4.view.MenuItemCompat.getActionView;
@@ -60,7 +61,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
             }
         });
 
-        dbHelper = new DbHelper(this);
+        dbHelper = GlobalApp.dbHelper;
 
         coordinatorLayout = findViewById(R.id.coordinator);
         interestRecyclerView = findViewById(R.id.interest_recyclerview);
@@ -90,7 +91,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
                         {
                             String interest = editText.getText().toString();
                             dbHelper.insertInterest(interest, 0, 0.5f);
-                            notifyChange(type);
+                            notifyChange(0);
                         }
                     }
                 })
@@ -108,7 +109,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
 
     public void notifyChange(int type)
     {
-        interestList.addAll(dbHelper.getInterests(1));
+        interestList.addAll(dbHelper.getInterests(type));
         interestAdapter.notifyDataSetChanged();
     }
 
@@ -158,7 +159,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
             dbHelper.deleteInterest(interestObj, type);
 
             Snackbar snackbar = Snackbar
-                    .make(coordinatorLayout, interest + " removed from cart!", Snackbar.LENGTH_LONG);
+                    .make(coordinatorLayout, interest + " removed from Interests!", Snackbar.LENGTH_LONG);
             snackbar.setAction("UNDO", new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

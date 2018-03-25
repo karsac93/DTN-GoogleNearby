@@ -15,6 +15,7 @@ import java.util.List;
 
 import info.androidhive.cardview.interest.InterestActivity;
 import info.androidhive.cardview.R;
+import info.androidhive.cardview.messages.InboxActivity;
 
 /**
  * Created by Ravi Tamada on 18/05/16.
@@ -39,6 +40,10 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
                     switch (title.getText().toString()){
                         case "Interest":
                             intent = new Intent(mContext, InterestActivity.class);
+                            mContext.startActivity(intent);
+                            break;
+                        case "Messages":
+                            intent = new Intent(mContext, InboxActivity.class);
                             mContext.startActivity(intent);
                     }
                 }

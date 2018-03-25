@@ -14,7 +14,7 @@
         android:fontFamily="sans-serif-medium"
         android:lineSpacingExtra="8sp"
         android:text="@string/lbl_new_interest_title"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/text"
         android:textSize="@dimen/lbl_new_interest_title"
         android:textStyle="normal" />
 
@@ -28,7 +28,7 @@
         android:inputType="textCapSentences|textMultiLine"
         android:lines="4"
         android:textColorHint="@color/hint_enter_interest"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/text"
         android:textSize="@dimen/lbl_new_interest_title" />
 
 </LinearLayout>

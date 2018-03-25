@@ -21,15 +21,13 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
-                          RecyclerView.ViewHolder target) {
-        Log.d(TAG, "onMove");
+                          RecyclerView.ViewHolder target) {;
         return true;
     }
 
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
         if(viewHolder != null){
-            Log.d(TAG, "onSelectedChanged");
             final View foregroundView = ((InterestAdapter.InterestViewHolder) viewHolder).foreground;
             getDefaultUIUtil().onSelected(foregroundView);
         }
@@ -39,14 +37,12 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     public void onChildDrawOver(Canvas c, RecyclerView recyclerView,
                                 RecyclerView.ViewHolder viewHolder, float dX, float dY,
                                 int actionState, boolean isCurrentlyActive) {
-        Log.d(TAG, "onChildDrawOver");
         final View foregroundView = ((InterestAdapter.InterestViewHolder) viewHolder).foreground;
         getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY, actionState, isCurrentlyActive);
     }
 
     @Override
     public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        Log.d(TAG, "clearView");
         final View foregroundView = ((InterestAdapter.InterestViewHolder) viewHolder).foreground;
         getDefaultUIUtil().clearView(foregroundView);
     }
@@ -55,7 +51,6 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
     public void onChildDraw(Canvas c, RecyclerView recyclerView,
                             RecyclerView.ViewHolder viewHolder, float dX, float dY,
                             int actionState, boolean isCurrentlyActive) {
-        Log.d(TAG, "onChildDraw");
         final View foregroundView = ((InterestAdapter.InterestViewHolder) viewHolder).foreground;
 
         getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY,
@@ -64,13 +59,11 @@ public class RecyclerItemTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-        Log.d(TAG, "onSwiped");
         listener.onSwiped(viewHolder, direction, viewHolder.getAdapterPosition());
     }
 
     @Override
     public int convertToAbsoluteDirection(int flags, int layoutDirection) {
-        Log.d(TAG, "convertToAbsoluteDirection");
         return super.convertToAbsoluteDirection(flags, layoutDirection);
     }
 

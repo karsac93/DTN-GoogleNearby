@@ -25,42 +25,33 @@ public class DbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL(Interest.CREATE_TABLE_SELF);
-        sqLiteDatabase.execSQL(Interest.CREATE_TABLE_TRANSIENT);
+        Log.d("DbHelper", "OnCreate");
+        Log.d("DbHelper-create", Interest.CREATE_TABLE_INTEREST);
+        sqLiteDatabase.execSQL(Interest.CREATE_TABLE_INTEREST);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Interest.TABLE_NAME_SELF);
-        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Interest.TABLE_NAME_TRANSIENT);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Interest.TABLE_NAME_INTEREST);
         onCreate(sqLiteDatabase);
     }
 
     public long insertInterest(String interest, int type, float value) {
         long id = 0;
-        String table_name = getTableName(type);
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(Interest.COLUMN_INTEREST, interest);
         values.put(Interest.INTEREST_VALUE, value);
-        id = db.insert(table_name, null, values);
+        values.put(Interest.TYPE, type);
+        id = db.insert(Interest.TABLE_NAME_INTEREST, null, values);
         return id;
     }
 
-    public String getTableName(int type) {
-        String table_name = null;
-        if (type == 0)
-            table_name = Interest.TABLE_NAME_SELF;
-        else
-            table_name = Interest.TABLE_NAME_TRANSIENT;
-        return table_name;
-    }
 
     public List<Interest> getInterests(int type) {
         List<Interest> interestList = new ArrayList<>();
-        String table_name = getTableName(type);
 
-        String selectQuery = "SELECT * FROM " + table_name + " ORDER BY " + Interest.COLUMN_ID;
+        String selectQuery = "SELECT * FROM " + Interest.TABLE_NAME_INTEREST + " WHERE type="+ type + " ORDER BY " + Interest.COLUMN_ID;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
@@ -78,8 +69,7 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public int getCount(int type) {
-        String table_name = getTableName(type);
-        String countQuery = "SELECT * FROM "+ table_name;
+        String countQuery = "SELECT * FROM "+ Interest.TABLE_NAME_INTEREST + " WHERE type=" + type;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor =  db.rawQuery(countQuery, new String[]{Interest.COLUMN_ID});
         int count = cursor.getCount();
@@ -87,9 +77,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     public void deleteInterest(Interest interest, int type){
-        String table_name = getTableName(type);
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(table_name, Interest.COLUMN_ID  + "=?", new String[]{String.valueOf(interest.getId())});
+        db.delete(Interest.TABLE_NAME_INTEREST, Interest.COLUMN_ID  + "=? AND " + Interest.TYPE + "=?", new String[]{String.valueOf(interest.getId()), String.valueOf(type)});
         db.close();
     }
 

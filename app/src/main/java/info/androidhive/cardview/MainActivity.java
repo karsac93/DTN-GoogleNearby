@@ -184,8 +184,11 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     @Override
     protected void onResume() {
         super.onResume();
-//        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
-//        registerReceiver(receiver, intentFilter);
+        if (GlobalApp.hasStarted) {
+            receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
+            registerReceiver(receiver, intentFilter);
+            GlobalApp.hasStarted = false;
+        }
     }
 
     @Override
@@ -249,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     private void prepareAlbums() {
         int[] covers = new int[]{
                 R.drawable.neighbours,
-                R.drawable.inbox,
+                R.drawable.message,
                 R.drawable.interest};
 
         Album a = new Album("Neighbours", covers[0]);

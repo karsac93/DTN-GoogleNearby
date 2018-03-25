@@ -10,7 +10,6 @@
         android:layout_gravity="center"
         android:layout_margin="@dimen/card_margin"
         android:elevation="3dp"
-        android:background="@android:color/darker_gray"
         card_view:cardCornerRadius="@dimen/card_album_radius">
 
         <RelativeLayout
@@ -33,7 +32,7 @@
                 android:paddingRight="@dimen/album_title_padding"
                 android:paddingTop="@dimen/album_title_padding"
                 android:paddingBottom="10dp"
-                android:textColor="@color/colorPrimary"
+                android:textColor="@color/text"
                 android:textSize="@dimen/album_title"
                 android:gravity="center"
                 android:textStyle="bold|italic" />
