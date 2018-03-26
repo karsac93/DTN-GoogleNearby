@@ -6,5 +6,6 @@ Homescreen, which allows users to choose actions like checking out neighbours wi
 [![homescreen.png](https://s9.postimg.org/ocu5t69fz/homescreen.png)](https://postimg.org/image/gk3i173gr/?raw=true)
 
 An activity to handle messages
-[![option_to_edit_tags.png](https://s9.postimg.org/fhtbiufkf/option_to_edit_tags.png)](https://postimg.org/image/h9madqyx7/?raw=true)
+
+[![option_to_edit_tags.png](https://s9.postimg.org/lviem5a6n/option_to_edit_tags.png)](https://postimg.org/image/dd8yht3nv/?raw=true)
 
