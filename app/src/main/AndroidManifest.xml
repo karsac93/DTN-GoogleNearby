@@ -13,14 +13,14 @@
         android:required="true" />
 
     <application
-        android:name="com.mst.com.mst.karsac.GlobalApp"
+        android:name="com.mst.karsac.GlobalApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.mst.com.mst.karsac.MainActivity"
+            android:name="com.mst.karsac.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -29,13 +29,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.mst.com.mst.karsac.Settings" />
+        <activity android:name="com.mst.karsac.Settings" />
         <activity
-            android:name="com.mst.com.mst.karsac.interest.InterestActivity"
+            android:name="com.mst.karsac.interest.InterestActivity"
             android:label="@string/title_activity_interest"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="com.mst.com.mst.karsac.messages.InboxActivity"
+            android:name="com.mst.karsac.messages.InboxActivity"
             android:label="@string/title_activity_inbox"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
