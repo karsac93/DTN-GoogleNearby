@@ -5,7 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="info.androidhive.cardview.messages.InboxActivity"
+    tools:context="com.mst.karsac.messages.InboxActivity"
     tools:showIn="@layout/activity_inbox">
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id ="@+id/recycler_msgs"
+        android:scrollbars="vertical"/>
 
 </android.support.constraint.ConstraintLayout>

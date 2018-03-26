@@ -29,6 +29,7 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:26.1.+'
     implementation 'com.android.support:cardview-v7:26.1.+'
     implementation 'com.github.bumptech.glide:glide:3.7.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     testImplementation 'junit:junit:4.12'

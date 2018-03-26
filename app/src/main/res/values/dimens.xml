@@ -18,4 +18,6 @@
     <dimen name="ic_delete">30dp</dimen>
     <dimen name="padding_10">10dp</dimen>
     <dimen name="appbar_padding_top">8dp</dimen>
+    <dimen name="thumbnail">90dp</dimen>
+    <dimen name="thumbnail_margin">16dp</dimen>
 </resources>
