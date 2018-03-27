@@ -19,8 +19,8 @@ import java.util.List;
 
 public class DbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "dtndatabase";
+    public static final int DATABASE_VERSION = 1;
+    public static final String DATABASE_NAME = "dtndatabase";
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

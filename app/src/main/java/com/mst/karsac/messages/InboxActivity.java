@@ -95,7 +95,7 @@ public class InboxActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 messages.timestamp = String.valueOf(sdf.format(file.lastModified()));
                 messages.imgPath = uri.toString();
-                messagesList.add(messages);
+
                 msgAdapter.notifyDataSetChanged();
             }
         }
