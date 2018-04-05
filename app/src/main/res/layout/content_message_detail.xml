@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.mst.karsac.messages.MessageDetail"
+    tools:showIn="@layout/activity_message_detail">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="4dp">
+
+        <TextView
+            android:id="@+id/file_name"
+            android:textSize="20sp"
+            android:paddingBottom="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Filename : "/>
+
+        <TextView
+            android:id="@+id/source_mac"
+            android:textSize="20sp"
+            android:paddingBottom="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Source Mac Address : "/>
+
+        <TextView
+            android:text="Tags"
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"/>
+
+        <EditText
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/insert_tags"
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/latitude"
+            android:text="Latitude : "
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/longitude"
+            android:text="Longitude : "
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/timestamp_created"
+            android:text="Timestamp created : "
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:textSize="20sp"
+            android:id="@+id/incentive_received"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incentive Received : "
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:textSize="20sp"
+            android:id="@+id/incentive_paid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incentive Paid : "
+            android:paddingBottom="5dp"/>
+
+        <TextView
+            android:textSize="20sp"
+            android:id="@+id/incentive_promised"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incentive Promised : "
+            android:paddingBottom="5dp"/>
+    </LinearLayout>
+</android.support.v4.widget.NestedScrollView>

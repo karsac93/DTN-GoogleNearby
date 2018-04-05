@@ -1,6 +1,9 @@
 package com.mst.karsac.messages;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,14 +13,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mst.karsac.DbHelper.DbHelper;
+import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 
 /**
@@ -25,12 +32,15 @@ import com.mst.karsac.R;
  */
 
 public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
+    public static final String MSG_KEY = "msg";
     Context mContext;
     List<Messages> messagesList = new ArrayList<>();
+    MyListener listener;
 
     public MsgAdapter(Context mContext, List<Messages> messagesList) {
         this.mContext = mContext;
         this.messagesList = messagesList;
+        this.listener = (MyListener) mContext;
     }
 
     @Override
@@ -42,12 +52,24 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
 
     @Override
     public void onBindViewHolder(final MsgViewHolder holder, int position) {
-        Messages msg = messagesList.get(position);
+        final Messages msg = messagesList.get(position);
         holder.fileName.setText("Filename : " + msg.fileName);
         holder.timestamp.setText("Timestamp : " + msg.timestamp);
         holder.rating.setText("Rating : " + String.valueOf(msg.rating));
 
         Glide.with(mContext).load(msg.imgPath).into(holder.thumbnail);
+
+        holder.relativeLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, MessageDetail.class);
+                intent.putExtra("msg", msg);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(MSG_KEY, msg);
+                intent.putExtras(bundle);
+                mContext.startActivity(intent);
+            }
+        });
 
         holder.overflow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,7 +78,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                 PopupMenu popupMenu = new PopupMenu(mContext, holder.overflow);
                 MenuInflater menuInflater = popupMenu.getMenuInflater();
                 menuInflater.inflate(R.menu.popup_menu, popupMenu.getMenu());
-                popupMenu.setOnMenuItemClickListener(new MyMenuItemClickListener());
+                popupMenu.setOnMenuItemClickListener(new MyMenuItemClickListener(msg));
                 popupMenu.show();
             }
         });
@@ -65,18 +87,23 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
     }
 
     class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
+        Messages msg;
 
-        public MyMenuItemClickListener() {
+
+        public MyMenuItemClickListener(Messages msg) {
+            this.msg = msg;
         }
 
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
-                case R.id.edit:
-                    Toast.makeText(mContext, "Modify Edit", Toast.LENGTH_SHORT).show();
-                    return true;
                 case R.id.navigate:
                     Toast.makeText(mContext, "Modify Navigate", Toast.LENGTH_SHORT).show();
+                    return true;
+                case R.id.delete:
+                    DbHelper dbHelper = GlobalApp.dbHelper;
+                    dbHelper.deleteMsg(msg);
+                    listener.callback(msg.type);
                     return true;
                 default:
             }
@@ -92,6 +119,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
     public class MsgViewHolder extends RecyclerView.ViewHolder{
         public TextView fileName, timestamp, rating;
         public ImageView thumbnail, overflow;
+        public RelativeLayout relativeLayout;
 
         public MsgViewHolder(View itemView) {
             super(itemView);
@@ -101,6 +129,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
             fileName = itemView.findViewById(R.id.filename);
             timestamp = itemView.findViewById(R.id.timestamp);
             rating = itemView.findViewById(R.id.ratings);
+            relativeLayout = itemView.findViewById(R.id.rel_touch);
         }
     }
 }

@@ -1,9 +1,11 @@
 package com.mst.karsac;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
@@ -13,6 +15,8 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -55,6 +59,11 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
 
     ArrayList<WiFiP2pService> servicesList = new ArrayList<>();
     private WifiP2pDnsSdServiceRequest serviceRequest;
+    String[] permissions = new String[]{
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         initCollapsingToolbar();
-
+        checkPermissions();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         albumList = new ArrayList<>();
@@ -92,6 +101,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
         startRegistrationAndDiscovery();
+    }
+
+    private void checkPermissions() {
+        boolean flag = false;
+        for(String permission : permissions)
+        {
+            if(ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED){
+                flag = true;
+                break;
+            }
+        }
+        if(flag)
+            ActivityCompat.requestPermissions(this, permissions, 102);
     }
 
     @Override
@@ -214,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
      * Initializing collapsing toolbar
      * Will show and hide the toolbar title on scroll
      */
-    private void initCollapsingToolbar() {
+    public void initCollapsingToolbar() {
         final CollapsingToolbarLayout collapsingToolbar =
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         collapsingToolbar.setTitle(" ");

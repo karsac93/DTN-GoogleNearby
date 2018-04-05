@@ -27,6 +27,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 
@@ -103,6 +104,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
 
     public void notifyChange(int type)
     {
+        interestList.clear();
         interestList.addAll(dbHelper.getInterests(type));
         interestAdapter.notifyDataSetChanged();
     }
