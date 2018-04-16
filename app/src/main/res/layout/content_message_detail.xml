@@ -11,85 +11,102 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_margin="4dp">
+        android:layout_margin="4dp"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/file_name"
-            android:textSize="20sp"
-            android:paddingBottom="5dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Filename : "/>
+            android:paddingBottom="5dp"
+            android:text="Filename : "
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/source_mac"
-            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:paddingBottom="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Source Mac Address : "/>
+            android:text="Source Mac Address : "
+            android:textSize="20sp" />
 
         <TextView
-            android:text="Tags"
-            android:textSize="20sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="5dp"/>
+            android:paddingBottom="5dp"
+            android:text="Tags : "
+            android:textSize="20sp" />
 
-        <EditText
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/insert_tags"
-            android:paddingBottom="5dp"/>
+            <EditText
+                android:id="@+id/insert_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:paddingBottom="5dp"
+                android:textSize="20sp"
+                android:inputType="textEmailAddress|textNoSuggestions"/>
 
         <TextView
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/latitude"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
             android:text="Latitude : "
-            android:paddingBottom="5dp"/>
+            android:textSize="20sp" />
 
         <TextView
-            android:textSize="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/longitude"
-            android:text="Longitude : "
-            android:paddingBottom="5dp"/>
-
-        <TextView
-            android:textSize="20sp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/timestamp_created"
-            android:text="Timestamp created : "
-            android:paddingBottom="5dp"/>
+            android:paddingBottom="5dp"
+            android:text="Longitude : "
+            android:textSize="20sp" />
 
         <TextView
-            android:textSize="20sp"
+            android:id="@+id/timestamp_created"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
+            android:text="Timestamp created : "
+            android:textSize="20sp" />
+
+        <TextView
             android:id="@+id/incentive_received"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
             android:text="Incentive Received : "
-            android:paddingBottom="5dp"/>
+            android:textSize="20sp" />
 
         <TextView
-            android:textSize="20sp"
             android:id="@+id/incentive_paid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
             android:text="Incentive Paid : "
-            android:paddingBottom="5dp"/>
+            android:textSize="20sp" />
 
         <TextView
-            android:textSize="20sp"
             android:id="@+id/incentive_promised"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="5dp"
             android:text="Incentive Promised : "
-            android:paddingBottom="5dp"/>
+            android:textSize="20sp" />
+
+        <Button
+            android:background="?android:attr/selectableItemBackground"
+            android:id="@+id/save_btn"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:textColor="@android:color/white"
+            android:text="SAVE"
+            android:textSize="20sp"
+            android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 </android.support.v4.widget.NestedScrollView>

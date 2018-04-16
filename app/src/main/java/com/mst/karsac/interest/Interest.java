@@ -16,7 +16,7 @@ public class Interest {
 
     private int id;
     private String interest;
-    private String timestamp;
+    private int timestamp;
     private float value;
     private int type;
 
@@ -24,7 +24,7 @@ public class Interest {
             "CREATE TABLE " + TABLE_NAME_INTEREST + "("
                     + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + COLUMN_INTEREST + " TEXT,"
-                    + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                    + COLUMN_TIMESTAMP + " INTEGER,"
                     + INTEREST_VALUE + " REAL,"
                     + TYPE + " INTEGER"
                     + ")";
@@ -33,7 +33,7 @@ public class Interest {
 
     }
 
-    public Interest(int id, String interest, String timestamp, int type) {
+    public Interest(int id, String interest, int timestamp, int type) {
         this.id = id;
         this.interest = interest;
         this.timestamp = timestamp;
@@ -52,7 +52,7 @@ public class Interest {
         this.interest = note;
     }
 
-    public String getTimestamp() {
+    public int getTimestamp() {
         return timestamp;
     }
 
@@ -60,7 +60,7 @@ public class Interest {
         this.id = id;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(int timestamp) {
         this.timestamp = timestamp;
     }
 

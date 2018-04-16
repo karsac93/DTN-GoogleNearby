@@ -1,8 +1,10 @@
 package com.mst.karsac;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,6 +15,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ActivityCompat;
@@ -39,30 +42,23 @@ import java.util.Map;
 import com.mst.karsac.cardivewProg.Album;
 import com.mst.karsac.cardivewProg.AlbumsAdapter;
 import com.mst.karsac.cardivewProg.GridSpacingItemDecoration;
+import com.mst.karsac.connections.BackgroundService;
 import com.mst.karsac.servicedns.WiFiDirectBroadcastReceiver;
 import com.mst.karsac.servicedns.WiFiP2pService;
 
-public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener {
+public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private AlbumsAdapter adapter;
     private List<Album> albumList;
 
     public static final String TAG = "MainActivity";
-    public static final String TXTRECORD_PROP_AVAILABLE = "available";
-    public static final String SERVICE_INSTANCE = "_wifidemotest";
-    public static final String SERVICE_REG_TYPE = "_presence._tcp";
-    private WifiP2pManager manager;
-    private final IntentFilter intentFilter = new IntentFilter();
-    private WifiP2pManager.Channel channel;
-    private BroadcastReceiver receiver = null;
 
-    ArrayList<WiFiP2pService> servicesList = new ArrayList<>();
-    private WifiP2pDnsSdServiceRequest serviceRequest;
     String[] permissions = new String[]{
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
     @Override
@@ -73,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         setSupportActionBar(toolbar);
         initCollapsingToolbar();
         checkPermissions();
+        GlobalApp.mainActivityContext = this;
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 
         albumList = new ArrayList<>();
@@ -83,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
-
         prepareAlbums();
 
         try {
@@ -91,16 +87,22 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-        intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-        intentFilter
-                .addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-        intentFilter
-                .addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(this, getMainLooper(), null);
-        startRegistrationAndDiscovery();
+    public void showDialogWiFi(){
+        Log.d("BroadcastReceiver", "App cannot function without WIFI");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Please enable WiFi to start using the app!");
+        builder.setCancelable(false);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void checkPermissions() {
@@ -127,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Intent intent = new Intent(this, Settings.class);
+                Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 break;
             default:
@@ -138,97 +140,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     }
 
 
-    private void startRegistrationAndDiscovery() {
-        Map<String, String> record = new HashMap<String, String>();
-        record.put(TXTRECORD_PROP_AVAILABLE, "visible");
-
-        WifiP2pDnsSdServiceInfo service = WifiP2pDnsSdServiceInfo.newInstance(
-                SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
-        manager.addLocalService(channel, service, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(getApplicationContext(), "Service successfully started", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onFailure(int error) {
-                Log.d(TAG, "Not able to start the service");
-            }
-        });
-        discoverService();
-    }
-
-    private void discoverService() {
-        manager.setDnsSdResponseListeners(channel, new WifiP2pManager.DnsSdServiceResponseListener() {
-            @Override
-            public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice srcDevice) {
-                if (instanceName.equalsIgnoreCase(SERVICE_INSTANCE)) {
-                    WiFiP2pService service = new WiFiP2pService(srcDevice, instanceName, registrationType);
-                    servicesList.add(service);
-                    Toast.makeText(getApplicationContext(), "New service detected", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "New service detected");
-                }
-            }
-        }, new WifiP2pManager.DnsSdTxtRecordListener() {
-            @Override
-            public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> record, WifiP2pDevice wifiP2pDevice) {
-                Log.d(TAG, wifiP2pDevice.deviceName + " is " + record.get(TXTRECORD_PROP_AVAILABLE));
-
-            }
-        });
-
-        serviceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-        manager.addServiceRequest(channel, serviceRequest, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Added Service request");
-            }
-
-            @Override
-            public void onFailure(int i) {
-                Log.d(TAG, "Failure, not added Service request");
-            }
-        });
-        manager.discoverServices(channel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Service discovery initiated");
-            }
-
-            @Override
-            public void onFailure(int i) {
-                Log.d(TAG, "Failure, service discovery not initiated");
-            }
-        });
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        receiver = new WiFiDirectBroadcastReceiver(manager, channel, this);
-        registerReceiver(receiver, intentFilter);
+        startService(new Intent(this, BackgroundService.class));
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        unregisterReceiver(receiver);
     }
 
     @Override
     protected void onStop() {
-        if (manager != null && channel != null) {
-            manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onFailure(int reasonCode) {
-                    Log.d(TAG, "Disconnect failed. Reason :" + reasonCode);
-                }
-
-                @Override
-                public void onSuccess() {
-                }
-            });
-        }
         super.onStop();
     }
 
@@ -290,9 +214,4 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
 
-
-    @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
-
-    }
 }

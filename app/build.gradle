@@ -32,6 +32,7 @@ dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation group: 'com.drewnoakes', name: 'metadata-extractor', version: '2.11.0'
     implementation 'com.android.support:exifinterface:26.1.0'
+    implementation 'com.google.android.gms:play-services:6.5.87'
 
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     testImplementation 'junit:junit:4.12'

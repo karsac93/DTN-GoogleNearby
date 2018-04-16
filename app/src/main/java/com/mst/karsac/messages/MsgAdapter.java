@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
@@ -78,6 +80,12 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                 PopupMenu popupMenu = new PopupMenu(mContext, holder.overflow);
                 MenuInflater menuInflater = popupMenu.getMenuInflater();
                 menuInflater.inflate(R.menu.popup_menu, popupMenu.getMenu());
+                Menu menu = popupMenu.getMenu();
+                if(msg.type == 1)
+                    menu.findItem(R.id.rate).setVisible(false);
+                else
+                    menu.findItem(R.id.rate).setVisible(true);
+
                 popupMenu.setOnMenuItemClickListener(new MyMenuItemClickListener(msg));
                 popupMenu.show();
             }
@@ -98,7 +106,11 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
                 case R.id.navigate:
-                    Toast.makeText(mContext, "Modify Navigate", Toast.LENGTH_SHORT).show();
+                    LatLng closest = new LatLng(msg.lat, msg.lon);
+                    Uri gmmIntentUri = Uri.parse("google.navigation:q=" + closest.latitude + "," + closest.longitude);
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    mContext.startActivity(mapIntent);
                     return true;
                 case R.id.delete:
                     DbHelper dbHelper = GlobalApp.dbHelper;

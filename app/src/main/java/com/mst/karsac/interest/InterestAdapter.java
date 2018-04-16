@@ -38,7 +38,6 @@ public class InterestAdapter extends RecyclerView.Adapter<InterestAdapter.Intere
     public void onBindViewHolder(InterestViewHolder holder, int position) {
         Interest curInterest = interestList.get(position);
         holder.interest.setText(curInterest.getInterest());
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         holder.timestamp.setText("Timestamp :" + curInterest.getTimestamp());
         holder.value.setText("Value :" + String.valueOf(curInterest.getValue()));
     }

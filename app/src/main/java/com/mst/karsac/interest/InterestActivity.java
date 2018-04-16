@@ -14,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -77,15 +78,25 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
         AlertDialog.Builder builder = new AlertDialog.Builder(InterestActivity.this);
         builder.setView(view);
         final EditText editText = (EditText) view.findViewById(R.id.interest);
-        TextView dialogTitle = (TextView) view.findViewById(R.id.dialog_title);
+        List<Interest> interests = dbHelper.getInterests(type);
+        StringBuilder concat_interest = new StringBuilder();
+        for (Interest intrest_one : interests) {
+            concat_interest.append(intrest_one.getInterest() + ", ");
+        }
+        String interestTags = "";
+        if(concat_interest.length() > 0)
+            interestTags = concat_interest.toString();
+        editText.setText(interestTags);
+        TextView dialogTitle = view.findViewById(R.id.dialog_title);
         builder
                 .setCancelable(false)
                 .setPositiveButton("save", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialogBox, int id) {
-                        if(editText.getText().toString().length() > 0)
-                        {
+                        if (editText.getText().toString().length() > 0) {
                             String interest = editText.getText().toString();
-                            dbHelper.insertInterest(interest, 0, 0.5f);
+                            String[] interests = interest.split(",");
+                            for (String intrst : interests)
+                                dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
                             notifyChange(0);
                         }
                     }
@@ -102,8 +113,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
 
     }
 
-    public void notifyChange(int type)
-    {
+    public void notifyChange(int type) {
         interestList.clear();
         interestList.addAll(dbHelper.getInterests(type));
         interestAdapter.notifyDataSetChanged();
@@ -127,8 +137,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
                     type = 1;
                     notifyChange(type);
 
-                }
-                else {
+                } else {
                     fab.setVisibility(View.VISIBLE);
                     type = 0;
                     notifyChange(type);
@@ -146,7 +155,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if(viewHolder instanceof InterestAdapter.InterestViewHolder){
+        if (viewHolder instanceof InterestAdapter.InterestViewHolder) {
             final String interest = interestList.get(viewHolder.getAdapterPosition()).getInterest();
             final Interest interestObj = interestList.get(viewHolder.getAdapterPosition());
             final Interest deletedItem = interestList.get(viewHolder.getAdapterPosition());

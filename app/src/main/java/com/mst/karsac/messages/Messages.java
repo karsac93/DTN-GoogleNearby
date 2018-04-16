@@ -3,8 +3,6 @@ package com.mst.karsac.messages;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.Serializable;
-
 /**
  * Created by ks2ht on 3/25/2018.
  */
@@ -30,7 +28,6 @@ public class Messages implements Parcelable{
     public static final String COLUMN_RECEIVED = "received";
     public static final String COLUMN_PAID = "paid";
 
-
     public String imgPath;
     public String timestamp;
     public String tagsForCurrentImg;
@@ -42,15 +39,15 @@ public class Messages implements Parcelable{
     public int type;
     public int id;
     public long size;
-    public float lat;
-    public float lon;
+    public double lat;
+    public double lon;
     public float incentive_promised;
     public float incentive_received;
     public float incentive_paid;
 
     public Messages(String imgPath, String timestamp, String tagsForCurrentImg, String fileName,
                     String format, String sourceMac, String destAddr, int rating, int type,
-                    long size, float lat, float lon, float incentive_paid, float incentive_promised,
+                    long size, double lat, double lon, float incentive_paid, float incentive_promised,
                     float incentive_received) {
         this.imgPath = imgPath;
         this.timestamp = timestamp;
@@ -101,8 +98,8 @@ public class Messages implements Parcelable{
         type = in.readInt();
         id = in.readInt();
         size = in.readLong();
-        lat = in.readFloat();
-        lon = in.readFloat();
+        lat = in.readDouble();
+        lon = in.readDouble();
         incentive_received = in.readFloat();
         incentive_paid = in.readFloat();
         incentive_promised = in.readFloat();
@@ -152,11 +149,11 @@ public class Messages implements Parcelable{
         return rating;
     }
 
-    public float getLat() {
+    public double getLat() {
         return lat;
     }
 
-    public float getLon() {
+    public double getLon() {
         return lon;
     }
 
@@ -178,7 +175,10 @@ public class Messages implements Parcelable{
         parcel.writeInt(type);
         parcel.writeInt(id);
         parcel.writeLong(size);
-        parcel.writeFloat(lat);
-        parcel.writeFloat(lon);
+        parcel.writeDouble(lat);
+        parcel.writeDouble(lon);
+        parcel.writeFloat(incentive_received);
+        parcel.writeFloat(incentive_paid);
+        parcel.writeFloat(incentive_promised);
     }
 }

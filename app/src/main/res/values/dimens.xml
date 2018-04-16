@@ -12,7 +12,7 @@
     <dimen name="album_cover_height">160dp</dimen>
     <dimen name="album_title_padding">10dp</dimen>
     <dimen name="album_title">15dp</dimen>
-    <dimen name="settings_margin">15dp</dimen>
+    <dimen name="settings_margin">10dp</dimen>
     <dimen name="settings_padding">4dp</dimen>
     <dimen name="lbl_new_interest_title">20sp</dimen>
     <dimen name="ic_delete">30dp</dimen>

@@ -34,8 +34,23 @@
                android:padding="@dimen/settings_padding"
                android:textSize="20dp"
                android:layoutDirection="rtl"/>
-
        </RadioGroup>
+
+        <Button
+            android:layout_marginBottom="10dp"
+            android:id="@+id/edit_pull_mode"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:text="Edit Pull mode"
+            android:textSize="20sp"
+            android:layout_gravity="center_horizontal"/>
 
            <View
                android:layout_width="match_parent"
