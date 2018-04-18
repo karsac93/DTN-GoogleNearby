@@ -202,6 +202,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String timestamp = String.valueOf(sdf.format(file.lastModified()));
+        Log.d("timestamp:", timestamp);
         Messages messages = new Messages(uri.toString(), timestamp, tagsForCurrentImg,
                 fileName, format, sourceMac, destAddr, rating, 0, size, lat, lon,
                 0.0f, 0.0f, 0.0f);

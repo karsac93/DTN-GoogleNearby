@@ -95,7 +95,6 @@
             android:textSize="20sp" />
 
         <Button
-            android:background="?android:attr/selectableItemBackground"
             android:id="@+id/save_btn"
             android:layout_marginTop="20dp"
             android:layout_marginLeft="20dp"
@@ -104,6 +103,8 @@
             android:paddingRight="15dp"
             android:layout_width="match_parent"
             android:layout_height="45dp"
+            android:background="@color/colorPrimary"
+            android:foreground="?attr/selectableItemBackground"
             android:textColor="@android:color/white"
             android:text="SAVE"
             android:textSize="20sp"

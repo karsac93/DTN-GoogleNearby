@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.mst.karsac.DbHelper.DbHelper;
@@ -76,6 +77,7 @@ public class MessageDetail extends AppCompatActivity {
         save_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(getApplicationContext(), "Interest added!", Toast.LENGTH_SHORT).show();
                 String tagsObtained = tags.getText().toString();
                 Log.d("TAGS", tagsObtained);
                 DbHelper dbHelper = GlobalApp.dbHelper;

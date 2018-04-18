@@ -68,9 +68,9 @@ public class Messages implements Parcelable{
 
     public static final String CREATE_TABLE_MESSAGE = "CREATE TABLE " + MY_MESSAGE_TABLE_NAME + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + COLUMN_IMG_PATH + " imgPath TEXT,"
-            + COLUMN_TIMESTAMP + " timestamp TEXT," +  COLUMN_TAGS + " TEXT,"
-            + COLUMN_FILENAME + " TXT," + COLUMN_FORMAT + " TXT," + COLUMN_SRCMAC + " TXT,"
-            + COLUMN_DESTADDR + " TXT," +  COLUMN_SIZE + " INTEGER," + COLUMN_RATING + " INTEGER,"
+            + COLUMN_TIMESTAMP + " TEXT," +  COLUMN_TAGS + " TEXT,"
+            + COLUMN_FILENAME + " TEXT," + COLUMN_FORMAT + " TEXT," + COLUMN_SRCMAC + " TEXT,"
+            + COLUMN_DESTADDR + " TEXT," +  COLUMN_SIZE + " INTEGER," + COLUMN_RATING + " INTEGER,"
             + COLUMN_LAT + " REAL," + COLUMN_LON + " REAL," + COLUMN_TYPE + " INTEGER, "
             + COLUMN_PAID + " REAL," + COLUMN_RECEIVED + " REAL," + COLUMN_PROMISED + " REAL)";
 

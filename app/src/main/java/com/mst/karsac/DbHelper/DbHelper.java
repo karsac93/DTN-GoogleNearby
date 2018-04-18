@@ -126,7 +126,7 @@ public class DbHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 String imgPath = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_IMG_PATH));
-                String timestamp = formatDate(cursor.getString(cursor.getColumnIndex(Messages.COLUMN_TIMESTAMP)));
+                String timestamp = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_TIMESTAMP));
                 String tagsForCurrentImg = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_TAGS));
                 String fileName = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_FILENAME));
                 String format = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_FORMAT));

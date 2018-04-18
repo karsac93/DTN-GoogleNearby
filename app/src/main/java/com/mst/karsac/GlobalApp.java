@@ -16,6 +16,8 @@ public class GlobalApp extends Application {
     public static DbHelper dbHelper;
     public static MainActivity mainActivityContext;
     public static final String TIMESTAMP = "timestamp";
+    public static final int SELF_INTEREST = 0;
+    public static final int TRANSIENT_INTEREST = 1;
 
     @Override
     public void onCreate() {
