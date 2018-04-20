@@ -96,7 +96,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
                             String interest = editText.getText().toString();
                             String[] interests = interest.split(",");
                             for (String intrst : interests)
-                                dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
+                                dbHelper.insertInterest(intrst.trim().toLowerCase(), 0, 0.5f);
                             notifyChange(0);
                         }
                     }

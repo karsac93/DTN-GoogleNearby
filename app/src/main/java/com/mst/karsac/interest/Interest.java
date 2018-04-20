@@ -1,10 +1,12 @@
 package com.mst.karsac.interest;
 
+import java.io.Serializable;
+
 /**
  * Created by ks2ht on 3/23/2018.
  */
 
-public class Interest {
+public class Interest implements Serializable {
 
     public static final String TABLE_NAME_INTEREST = "interest";
 

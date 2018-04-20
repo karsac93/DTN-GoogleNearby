@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".Setting"
+    tools:showIn="@layout/activity_setting">
+
+    <LinearLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/settings_margin">
+
+            <RadioButton
+                android:id="@+id/setting_push"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_push"
+                android:padding="@dimen/settings_padding"
+                android:textSize="20dp"
+                android:layoutDirection="rtl"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/setting_pull"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_pull"
+                android:padding="@dimen/settings_padding"
+                android:textSize="20dp"
+                android:layoutDirection="rtl"/>
+        </RadioGroup>
+
+        <Button
+            android:layout_marginBottom="10dp"
+            android:id="@+id/edit_pull_mode"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/colorPrimary"
+            android:textColor="@android:color/white"
+            android:text="Edit Pull mode"
+            android:textSize="20sp"
+            android:layout_gravity="center_horizontal"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/colorAccent"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/settings_margin">
+
+            <TextView
+                android:id="@+id/incentive_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:textSize="20dp"
+                android:padding="@dimen/settings_padding"
+                android:text="@string/settings_incentive"/>
+
+            <TextView
+                android:id="@+id/int_incentive"
+                android:text="300"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:padding="@dimen/settings_padding"
+                android:textSize="20dp" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

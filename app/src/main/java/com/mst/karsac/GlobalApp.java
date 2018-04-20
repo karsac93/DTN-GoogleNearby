@@ -1,7 +1,9 @@
 package com.mst.karsac;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.Log;
 
@@ -24,6 +26,9 @@ public class GlobalApp extends Application {
         super.onCreate();
         Log.d("GLOBAL", "Inside");
         dbHelper = new DbHelper(this);
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.setWifiEnabled(true);
+
         startService(new Intent(this, BackgroundService.class));
     }
 }

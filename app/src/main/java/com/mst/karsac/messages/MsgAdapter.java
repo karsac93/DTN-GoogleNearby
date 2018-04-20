@@ -57,6 +57,11 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
         final Messages msg = messagesList.get(position);
         holder.fileName.setText("Filename : " + msg.fileName);
         holder.timestamp.setText("Timestamp : " + msg.timestamp);
+
+        if(msg.type == 0){
+            holder.rating.setVisibility(View.GONE);
+        }
+
         holder.rating.setText("Rating : " + String.valueOf(msg.rating));
 
         Glide.with(mContext).load(msg.imgPath).into(holder.thumbnail);

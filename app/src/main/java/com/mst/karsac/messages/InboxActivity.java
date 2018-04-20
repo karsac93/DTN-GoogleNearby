@@ -2,7 +2,9 @@ package com.mst.karsac.messages;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -48,20 +51,10 @@ import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 
-public class InboxActivity extends AppCompatActivity implements MyListener,
-        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class InboxActivity extends AppCompatActivity implements MyListener {
 
     private static final int CHOOSE_FILE_GAL_RESULT_CODE = 101;
     private static final int CHOOSE_FILE_CAM_RESULT_CODE = 102;
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
-    private Location mLastLocation;
-    private boolean mRequestingLocationUpdates = false;
-    private LocationRequest mLocationRequest;
-    private GoogleApiClient mGoogleApiClient;
-    private static int UPDATE_INTERVAL = 10000; // 10 sec
-    private static int FATEST_INTERVAL = 5000; // 5 sec
-    private static int DISPLACEMENT = 10; // 10 meters
-
 
     RecyclerView msgRecyclerview;
     List<Messages> messagesList = new ArrayList<>();
@@ -76,7 +69,6 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
     protected void onResume() {
         super.onResume();
         notifyChange(type);
-        checkPlayServices();
     }
 
     @Override
@@ -99,12 +91,6 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
         msgRecyclerview.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         msgRecyclerview.setAdapter(msgAdapter);
         messageDbHelper = GlobalApp.dbHelper;
-
-        if (checkPlayServices()) {
-
-            // Building the GoogleApi client
-            buildGoogleApiClient();
-        }
 
         fab_gal = (FloatingActionButton) findViewById(R.id.fab_gallery);
         fab_gal.setOnClickListener(new View.OnClickListener() {
@@ -135,37 +121,9 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
         });
     }
 
-    private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Toast.makeText(getApplicationContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
-                        .show();
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API).build();
-    }
-
     @Override
     protected void onStart() {
         super.onStart();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
     }
 
 
@@ -181,7 +139,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
         if (requestCode == CHOOSE_FILE_CAM_RESULT_CODE) {
             Log.d("INBOX", "Yeah made it!");
 
-           handleResult(uriSavedImage);
+            handleResult(uriSavedImage);
         }
     }
 
@@ -189,8 +147,8 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
         File file = new File(uri.getPath());
         int type = 0;
         double[] location = getLocation();
-        double lon = location[0];
-        double lat = location[1];
+        double lat = location[0];
+        double lon = location[1];
         int rating = 0;
         long size = file.length() / 1024;
         String destAddr = "Not set";
@@ -259,17 +217,13 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
     private double[] getLocation() {
         double latitude = 0.0;
         double longitude = 0.0;
-
-        mLastLocation = LocationServices.FusedLocationApi
-                .getLastLocation(mGoogleApiClient);
-
-        if (mLastLocation != null) {
-            latitude = mLastLocation.getLatitude();
-            longitude = mLastLocation.getLongitude();
-
-        } else {
-
-           Log.d("TAG","Couldn't get the location. Make sure location is enabled on the device");
+        try {
+            LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+        } catch (SecurityException e) {
+            e.printStackTrace();
         }
         return new double[]{latitude, longitude};
     }
@@ -277,20 +231,5 @@ public class InboxActivity extends AppCompatActivity implements MyListener,
     @Override
     public void callback(int type) {
         notifyChange(type);
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
     }
 }
