@@ -11,13 +11,13 @@ public class ChitchatAlgo {
 
     public List<Interest> decayingFunction(int timestamp){
         DbHelper dbHelper = GlobalApp.dbHelper;
-        List<Interest> self_interest = new ArrayList<>();
-        List<Interest> transient_interest = new ArrayList<>();
+        List<Interest> self_interest;
+        List<Interest> transient_interest;
         self_interest = dbHelper.getInterests(GlobalApp.SELF_INTEREST);
         transient_interest = dbHelper.getInterests(GlobalApp.TRANSIENT_INTEREST);
         self_interest = decayFormula(self_interest, GlobalApp.SELF_INTEREST, timestamp);
         transient_interest = decayFormula(transient_interest, GlobalApp.TRANSIENT_INTEREST, timestamp);
-        self_interest.addAll(transient_interest);
+        //self_interest.addAll(transient_interest);
         return self_interest;
 
     }
