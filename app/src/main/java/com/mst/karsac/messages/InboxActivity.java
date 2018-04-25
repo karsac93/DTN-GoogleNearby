@@ -2,10 +2,9 @@ package com.mst.karsac.messages;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -27,7 +25,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -37,16 +34,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.Tag;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
@@ -64,6 +51,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
     FloatingActionButton fab_cam, fab_gal;
     public static int type;
     Uri uriSavedImage;
+    File image;
 
     @Override
     protected void onResume() {
@@ -96,9 +84,9 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         fab_gal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(intent, CHOOSE_FILE_GAL_RESULT_CODE);
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent, CHOOSE_FILE_GAL_RESULT_CODE);
             }
         });
 
@@ -111,9 +99,8 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                 if (!imagesFolder.exists()) {
                     imagesFolder.mkdirs();
                 }
-                File image = new File(imagesFolder, "IMG_" + timestamp + ".jpg");
+                image = new File(imagesFolder, "IMG_" + timestamp + ".jpg");
                 uriSavedImage = Uri.fromFile(image);
-
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, uriSavedImage);
                 startActivityForResult(intent, CHOOSE_FILE_CAM_RESULT_CODE);
@@ -129,21 +116,22 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if (requestCode == CHOOSE_FILE_GAL_RESULT_CODE) {
             Uri uri = data.getData();
             if (uri != null) {
                 Log.d("INBOX", "Yeah made it!");
-                handleResult(uri);
+                handleResult(uri, image);
             }
         }
         if (requestCode == CHOOSE_FILE_CAM_RESULT_CODE) {
             Log.d("INBOX", "Yeah made it!");
-
-            handleResult(uriSavedImage);
+            handleResult(uriSavedImage, image);
         }
     }
 
-    private void handleResult(Uri uri) {
+
+    private void handleResult(Uri uri, File image) {
         File file = new File(uri.getPath());
         int type = 0;
         double[] location = getLocation();
@@ -165,7 +153,11 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                 fileName, format, sourceMac, destAddr, rating, 0, size, lat, lon,
                 0.0f, 0.0f, 0.0f);
 
-        messages.imgPath = uri.toString();
+        if (image == null)
+            messages.imgPath = getRealPathFromURI(this, uri);
+        else
+            messages.imgPath = image.getAbsolutePath();
+        Log.d("FilePath", messages.imgPath);
         messageDbHelper.insertImageRecord(messages);
         notifyChange(type);
     }
@@ -220,8 +212,10 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         try {
             LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
             Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            latitude = location.getLatitude();
-            longitude = location.getLongitude();
+            if (location != null) {
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
+            }
         } catch (SecurityException e) {
             e.printStackTrace();
         }
@@ -232,4 +226,20 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
     public void callback(int type) {
         notifyChange(type);
     }
+
+    public String getRealPathFromURI(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            cursor = context.getContentResolver().query(contentUri, null, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+
 }

@@ -28,7 +28,6 @@ public class GlobalApp extends Application {
         dbHelper = new DbHelper(this);
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(true);
-
         startService(new Intent(this, BackgroundService.class));
     }
 }

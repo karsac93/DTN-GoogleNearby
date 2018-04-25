@@ -64,7 +64,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
 
         holder.rating.setText("Rating : " + String.valueOf(msg.rating));
 
-        Glide.with(mContext).load(msg.imgPath).into(holder.thumbnail);
+        Glide.with(mContext).load(new File(msg.imgPath).toString()).into(holder.thumbnail);
 
         holder.relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override

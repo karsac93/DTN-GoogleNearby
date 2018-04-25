@@ -3,6 +3,8 @@ package com.mst.karsac.messages;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 /**
  * Created by ks2ht on 3/25/2018.
  */

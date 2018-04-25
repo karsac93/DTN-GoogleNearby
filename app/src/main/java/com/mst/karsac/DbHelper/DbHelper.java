@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.mst.karsac.GlobalApp;
+import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
 
@@ -24,9 +26,11 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "dtndatabase";
+    Context context;
 
     public DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     @Override
@@ -43,6 +47,13 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
+    public int updateInterest(String interest, float value, int type){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(Interest.INTEREST_VALUE, value);
+        return db.update(Interest.TABLE_NAME_INTEREST, contentValues, Interest.COLUMN_INTEREST + "=? AND " + Interest.TYPE + "=?", new String[]{interest, String.valueOf(type)});
+    }
+
     public long insertInterest(String interest, int type, float value) {
         long id = 0;
         int count = 0;
@@ -51,7 +62,7 @@ public class DbHelper extends SQLiteOpenHelper {
         values.put(Interest.COLUMN_INTEREST, interest);
         values.put(Interest.INTEREST_VALUE, value);
         values.put(Interest.TYPE, type);
-        values.put(Interest.COLUMN_TIMESTAMP, 0);
+        values.put(Interest.COLUMN_TIMESTAMP, SharedPreferencesHandler.getTimestamp(context, GlobalApp.TIMESTAMP));
         String selectQuery = "SELECT * FROM " + Interest.TABLE_NAME_INTEREST + " WHERE " +
                 Interest.COLUMN_INTEREST + "='" + interest + "'";
         Cursor cursor = db.rawQuery(selectQuery, null);

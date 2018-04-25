@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
@@ -27,26 +28,25 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.servicedns.WiFiDirectBroadcastReceiver;
-import com.mst.karsac.servicedns.WiFiP2pService;
 
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BackgroundService extends Service implements WifiP2pManager.ConnectionInfoListener {
+public class BackgroundService extends Service implements WifiP2pManager.ConnectionInfoListener, TsInterestsInterface {
     public static final String TAG = "BackgroundService";
     public static final String TXTRECORD_PROP_AVAILABLE = "available";
-    public static final String SERVICE_INSTANCE = "_wifidemotest";
+    public static String SERVICE_INSTANCE = "_wifidemotest";
+    public static final String INSTANCE = "_wifidemotest";
     public static final String SERVICE_REG_TYPE = "_presence._tcp";
     public String deviceMac = "";
-    public static final int PORT = 8085;
-    public static final int SOCKET_TIMEOUT = 5000;
+    public static final int PORT = 8888;
+    public static final int SOCKET_TIMEOUT = 60000;
 
     private static WifiP2pManager manager;
     private final IntentFilter intentFilter = new IntentFilter();
@@ -54,6 +54,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     private BroadcastReceiver receiver = null;
     public static final String OWNER = "owner";
     public static final String CLIENT = "client";
+    MessageSerializer my_messageSerializer = null;
 
 
     @Override
@@ -74,6 +75,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         WifiManager wifiManager = (WifiManager) getApplicationContext().
                 getSystemService(Context.WIFI_SERVICE);
         WifiInfo info = wifiManager.getConnectionInfo();
+        SERVICE_INSTANCE = SERVICE_INSTANCE + "|" + info.getMacAddress();
         deviceMac = info.getMacAddress();
         startRegistration();
     }
@@ -82,29 +84,18 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         manager.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                final boolean[] flag = {false};
-                Map record = new HashMap();
-                record.put(TXTRECORD_PROP_AVAILABLE, deviceMac);
                 WifiP2pDnsSdServiceInfo serviceInfo = WifiP2pDnsSdServiceInfo
-                        .newInstance(SERVICE_INSTANCE, SERVICE_REG_TYPE, record);
+                        .newInstance(SERVICE_INSTANCE, SERVICE_REG_TYPE, null);
                 manager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
                         manager.setDnsSdResponseListeners(channel, new WifiP2pManager.DnsSdServiceResponseListener() {
                             @Override
                             public void onDnsSdServiceAvailable(String instanceName, String registrationType, WifiP2pDevice wifiP2pDevice) {
-                                Log.d(TAG, "Service Found");
-                                flag[0] = true;
-
-                            }
-                        }, new WifiP2pManager.DnsSdTxtRecordListener() {
-                            @Override
-                            public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> record, WifiP2pDevice wifiP2pDevice) {
-                                if (flag[0] == true) {
-                                    flag[0] = false;
-                                    Log.d(TAG, "Service Found");
-                                    Log.d(TAG, wifiP2pDevice.deviceName + " Mac:" + record.get(TXTRECORD_PROP_AVAILABLE));
-                                    String receivedMac = record.get(TXTRECORD_PROP_AVAILABLE).replace(":", "");
+                                Log.d(TAG, "Service Found:" + instanceName);
+                                if (instanceName.contains(INSTANCE)) {
+                                    Log.d(TAG, instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()));
+                                    String receivedMac = instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()).replace(":", "");
                                     deviceMac = deviceMac.replace(":", "");
                                     boolean flag = false;
                                     for (int i = 0; i < receivedMac.length(); i++) {
@@ -112,6 +103,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                                         int received = (int) receivedMac.charAt(i);
                                         if (own != received) {
                                             if (own > received) {
+                                                Log.d(TAG, "Initiating the connection");
                                                 flag = true;
                                             }
                                             break;
@@ -120,8 +112,11 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                                     if (flag) {
                                         connectP2p(wifiP2pDevice);
                                     }
-
                                 }
+                            }
+                        }, new WifiP2pManager.DnsSdTxtRecordListener() {
+                            @Override
+                            public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> record, WifiP2pDevice wifiP2pDevice) {
                             }
 
                         });
@@ -142,42 +137,47 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
                                                     @Override
                                                     public void onFailure(int i) {
-
+                                                        Log.d(TAG, "Discover services failure:" + i);
+                                                        handler.postDelayed(handlerTask, 60000);
                                                     }
                                                 });
                                             }
 
                                             @Override
                                             public void onFailure(int i) {
-                                                Log.d(TAG, "discoverPeers Failure");
+                                                Log.d(TAG, "discoverPeers Failure:" + i);
+                                                handler.postDelayed(handlerTask, 60000);
                                             }
                                         });
                                     }
 
                                     @Override
                                     public void onFailure(int i) {
-                                        Log.d(TAG, "addServiceRequest Failure");
+                                        Log.d(TAG, "addServiceRequest Failure:" + i);
+                                        handler.postDelayed(handlerTask, 60000);
                                     }
                                 });
                             }
 
                             @Override
                             public void onFailure(int i) {
-                                Log.d(TAG, "clearServiceRequests Failure");
+                                Log.d(TAG, "clearServiceRequests Failure:" + i);
+                                handler.postDelayed(handlerTask, 60000);
                             }
                         });
                     }
 
                     @Override
                     public void onFailure(int i) {
-                        Log.d(TAG, "addLocalService Failure");
+                        Log.d(TAG, "addLocalService Failure:" + i);
+                        handler.postDelayed(handlerTask, 60000);
                     }
                 });
             }
 
             @Override
             public void onFailure(int i) {
-                Log.d(TAG, "clearLocalServices Failure");
+                Log.d(TAG, "clearLocalServices Failure:" + i);
             }
         });
     }
@@ -198,14 +198,15 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
                         @Override
                         public void onFailure(int i) {
-
+                            Log.d(TAG, "Discover services Failure:" + i);
+                            handler.postDelayed(handlerTask, 60000);
                         }
                     });
                 }
-
                 @Override
                 public void onFailure(int i) {
-                    Log.d(TAG, "discoverPeers Failure");
+                    Log.d(TAG, "discoverPeers Failure:" + i);
+                    handler.postDelayed(handlerTask, 60000);
                 }
             });
         }
@@ -241,7 +242,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "Inside on destry!");
+        Log.d(TAG, "Inside on destroy!");
         if (manager != null && channel != null) {
             manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
                 @Override
@@ -263,72 +264,103 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         Log.d(TAG, "Inside onConnectionAvailable method");
         int init_time = SharedPreferencesHandler.getTimestamp(getApplicationContext(), GlobalApp.TIMESTAMP);
         SharedPreferencesHandler.setTimestamp(getApplicationContext(), GlobalApp.TIMESTAMP, init_time + 1);
-        List<Interest> decayedInterest = new ChitchatAlgo().decayingFunction(init_time + 1);
-        MessageExchange messageExchange = new MessageExchange((ArrayList<Interest>) decayedInterest);
+        List<Interest> my_interests = new ChitchatAlgo().decayingFunction(SharedPreferencesHandler.getTimestamp(this, GlobalApp.TIMESTAMP));
+        my_messageSerializer = new MessageSerializer(my_interests, MessageSerializer.INTEREST_MODE);
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
             Log.d(TAG, "Server");
-            Intent intent = new Intent(this, ServerIntentService.class);
-            intent.setAction(ServerIntentService.ACTION_SEND_FILE);
-            Bundle bundle = new Bundle();
-            bundle.putString(ServerIntentService.ROLE, OWNER);
-            bundle.putSerializable(ServerIntentService.INTEREST_MSG, messageExchange);
-            intent.putExtras(bundle);
-            startService(intent);
+            FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(this, my_messageSerializer, BackgroundService.OWNER);
+            fileReceiveAsyncTask.execute();
+
         } else {
             Log.d(TAG, "CLIENT");
-
-            ClientAsyncTask clientAsyncTask = new ClientAsyncTask(this, wifiP2pInfo.groupOwnerAddress);
-            clientAsyncTask.execute(messageExchange);
-
-            Intent intent = new Intent(this, ServerIntentService.class);
-            intent.setAction(ServerIntentService.ACTION_SEND_FILE);
-            intent.putExtra(ServerIntentService.ROLE, CLIENT);
-            startService(intent);
+            FileTransferAsyncTask fileTransferAsyncTask = new FileTransferAsyncTask(this, wifiP2pInfo.groupOwnerAddress, my_messageSerializer);
+            fileTransferAsyncTask.execute();
+            FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(this, my_messageSerializer, BackgroundService.CLIENT);
+            fileReceiveAsyncTask.execute();
         }
 
     }
 
-    public static class ClientAsyncTask extends AsyncTask<MessageExchange, String, MessageExchange> {
-        Context context;
-        String role;
-        InetAddress groupOwnerAddress;
+    @Override
+    public MessageSerializer getTsInterests() {
+        return my_messageSerializer;
+    }
 
-        public ClientAsyncTask(Context context, InetAddress groupOwnerAddress) {
-            this.context = context;
-            this.groupOwnerAddress = groupOwnerAddress;
-        }
+    @Override
+    public void notifyComplete() {
+        disconnect();
+    }
 
-        @Override
-        protected void onPostExecute(MessageExchange msg) {
-            Log.d(TAG, "onPostExecute");
-        }
+    public static void disconnect() {
+        if (manager != null && channel != null) {
+            manager.requestGroupInfo(channel, new WifiP2pManager.GroupInfoListener() {
+                @Override
+                public void onGroupInfoAvailable(WifiP2pGroup group) {
+                    if (group != null && manager != null && channel != null
+                            && group.isGroupOwner()) {
+                        manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
 
-        @Override
-        protected MessageExchange doInBackground(MessageExchange... messageExchanges) {
-            MessageExchange msg = null;
-            try {
-                Log.d(TAG, "Inside client");
-                Socket socket = new Socket();
-                try {
-                    socket.connect(new InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT);
-                    OutputStream stream = socket.getOutputStream();
-                    ObjectOutputStream oos = new ObjectOutputStream(stream);
-                    MessageExchange temp = messageExchanges[0];
-                    Log.d(TAG, "Client: " + temp.getInterestArrayList().get(0).getInterest());
-                    oos.writeObject(messageExchanges[0]);
-                    oos.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (socket != null) {
-                        if (socket.isConnected())
-                            socket.close();
+                            @Override
+                            public void onSuccess() {
+                                Log.d(TAG, "removeGroup onSuccess -");
+                            }
+
+                            @Override
+                            public void onFailure(int reason) {
+                                Log.d(TAG, "removeGroup onFailure -" + reason);
+                            }
+                        });
                     }
                 }
+            });
+        }
+    }
+
+    public static class FileTransferAsyncTask extends AsyncTask<Void, Void, Void> {
+        private Context context;
+        InetAddress host;
+        MessageSerializer messageSerializer;
+
+        public FileTransferAsyncTask(Context context, InetAddress host, MessageSerializer messageSerializer) {
+            this.context = context;
+            this.host = host;
+            this.messageSerializer = messageSerializer;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Socket socket = new Socket();
+            try {
+                socket.bind(null);
+                socket.connect(new InetSocketAddress(host, PORT), SOCKET_TIMEOUT);
+                OutputStream stream = socket.getOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(stream);
+                if (messageSerializer != null) {
+                    Log.d(TAG, "Size" + messageSerializer.my_interests.size());
+                    oos.writeObject(messageSerializer);
+                }
+                stream.close();
+                oos.close();
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (socket != null) {
+                    if (socket.isConnected()) {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            // Give up
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
-            return msg;
+            return null;
         }
     }
 }

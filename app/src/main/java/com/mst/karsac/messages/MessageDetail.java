@@ -1,5 +1,6 @@
 package com.mst.karsac.messages;
 
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.net.Uri;
@@ -42,16 +43,16 @@ public class MessageDetail extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Bundle bundle = this.getIntent().getExtras();
-        if(bundle != null){
+        if (bundle != null) {
             msg = bundle.getParcelable(MsgAdapter.MSG_KEY);
-            if(msg == null)
+            if (msg == null)
                 finish();
         }
         initCollapsingToolbar(msg);
 
         msgImg = findViewById(R.id.msgImg);
         Log.d("MessageDetail", msg.imgPath);
-        Glide.with(this).load(msg.imgPath).into(msgImg);
+        Glide.with(this).load(new File(msg.imgPath).toString()).into(msgImg);
 
         file_name = findViewById(R.id.file_name);
         source_mac = findViewById(R.id.source_mac);
