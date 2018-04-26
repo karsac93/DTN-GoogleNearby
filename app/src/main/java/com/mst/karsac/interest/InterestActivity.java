@@ -68,8 +68,10 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
         interestRecyclerView.setItemAnimator(new DefaultItemAnimator());
         interestRecyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         interestRecyclerView.setAdapter(interestAdapter);
-        ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        new ItemTouchHelper(simpleCallback).attachToRecyclerView(interestRecyclerView);
+        if (type == 0) {
+            ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
+            new ItemTouchHelper(simpleCallback).attachToRecyclerView(interestRecyclerView);
+        }
     }
 
     private void ShowInterestDialog() {
@@ -84,7 +86,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
             concat_interest.append(intrest_one.getInterest() + ", ");
         }
         String interestTags = "";
-        if(concat_interest.length() > 0)
+        if (concat_interest.length() > 0)
             interestTags = concat_interest.toString();
         editText.setText(interestTags);
         TextView dialogTitle = view.findViewById(R.id.dialog_title);

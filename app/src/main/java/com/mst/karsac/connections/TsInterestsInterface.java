@@ -7,4 +7,6 @@ public interface TsInterestsInterface {
     public MessageSerializer getTsInterests();
 
     public void notifyComplete();
+
+    public void notifyCompleteClient();
 }

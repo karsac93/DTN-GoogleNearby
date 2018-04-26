@@ -127,7 +127,12 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
 
     private void handleResult(Uri uri, File image) {
-        File file = new File(uri.getPath());
+        String img_path = null;
+        if (image == null)
+            img_path = getRealPathFromURI(this, uri);
+        else
+            img_path = image.getAbsolutePath();
+        File file = new File(img_path);
         int type = 0;
         double[] location = getLocation();
         double lat = location[0];
@@ -136,10 +141,11 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         long size = file.length() / 1024;
         String destAddr = "";
         String sourceMac = GlobalApp.source_mac;
-        String format = FilenameUtils.getExtension(file.getName());
-        String fileName = FilenameUtils.getName(file.getName());
+        String fileName = file.getName();
+        String format = file.getName().substring(fileName.indexOf(".") + 1, fileName.length());
+        Log.d("Inbox", "Format:" + format);
+        Log.d("Inbox", "Filename:" + fileName);
         String tagsForCurrentImg = "";
-        Log.d("NAme", FilenameUtils.getName(file.getName()));
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String timestamp = String.valueOf(sdf.format(file.lastModified()));
@@ -147,11 +153,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         Messages messages = new Messages(uri.toString(), timestamp, tagsForCurrentImg,
                 fileName, format, sourceMac, destAddr, rating, 0, size, lat, lon,
                 0.0f, 0.0f, 0.0f);
-
-        if (image == null)
-            messages.imgPath = getRealPathFromURI(this, uri);
-        else
-            messages.imgPath = image.getAbsolutePath();
+        messages.imgPath = img_path;
         Log.d("FilePath", messages.imgPath);
         messageDbHelper.insertImageRecord(messages);
         notifyChange(type);

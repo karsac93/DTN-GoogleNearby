@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.mst.karsac.Algorithm.ChitchatAlgo;
 import com.mst.karsac.GlobalApp;
-import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.messages.Messages;
 
 import java.io.File;
@@ -51,13 +50,12 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
             Socket client = serverSocket.accept();
             Log.d(TAG, "Client InetAddress:" + client.getInetAddress());
             wifiClientIp = client.getInetAddress();
-            SharedPreferencesHandler.setStringPreferences(context, BackgroundService.LAST_DEVICE, wifiClientIp.toString());
             ObjectInputStream ois = new ObjectInputStream(client.getInputStream());
             incoming_msg = (MessageSerializer) ois.readObject();
             if (incoming_msg.mode.contains(MessageSerializer.INTEREST_MODE)) {
                 new ChitchatAlgo().growthAlgorithm(incoming_msg.my_interests, messageSerializer.my_interests);
                 obtained_msg = incoming_msg;
-                Log.d(TAG, incoming_msg.my_interests.get(0).getInterest());
+                //Log.d(TAG, incoming_msg.my_interests.get(0).getInterest());
                 if (role.contains(BackgroundService.OWNER)) {
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, messageSerializer);
                     fileTransferAsyncTask.execute();
@@ -130,6 +128,7 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                     MessageSerializer messageSerializer = new MessageSerializer(MessageSerializer.RECEIVED_MODE);
                     BackgroundService.FileTransferAsyncTask transferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, messageSerializer);
                     transferAsyncTask.execute();
+                    myListener.notifyCompleteClient();
                 }
             }
         }

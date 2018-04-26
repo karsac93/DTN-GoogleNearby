@@ -21,22 +21,24 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
 
     private WifiP2pManager manager;
     private WifiP2pManager.Channel channel;
-    public final Service service;
+    public final Context context;
     private static final String TAG = "BroadcastReceiver";
+    NotifyPeerChange listener;
+    WifiP2pDevice wifiP2pDevice = null;
 
 
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
-                                       Service service) {
+                                       Context context) {
         super();
         this.manager = manager;
         this.channel = channel;
-        this.service = service;
+        this.context = context;
+        this.listener = (NotifyPeerChange) context;
     }
 
     @Override
     public void onReceive(final Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(TAG, action);
         if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             Log.d("Onreceive", "Check");
             // Check to see if Wi-Fi is enabled and notify appropriate activity
@@ -47,6 +49,8 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             }
         } else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             // Call WifiP2pManager.requestPeers() to get a list of current peers
+            //listener.peersHaveChanged();
+
         } else if (WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION.equals(action)) {
             // Respond to new connection or disconnections
             if(manager == null)
@@ -54,12 +58,17 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             NetworkInfo networkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
             if(networkInfo.isConnected())
             {
-                manager.requestConnectionInfo(channel, (WifiP2pManager.ConnectionInfoListener) service);
+                manager.requestConnectionInfo(channel, (WifiP2pManager.ConnectionInfoListener) context);
             }
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
-            WifiP2pDevice device = (WifiP2pDevice) intent
+            wifiP2pDevice = (WifiP2pDevice) intent
                     .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            Log.d(TAG, "Device status -" + device.status + " " + device.deviceAddress);
+            Log.d(TAG, "Device status -" + wifiP2pDevice.status + " " + wifiP2pDevice.deviceAddress);
+            listener.peersHaveChanged(wifiP2pDevice);
         }
+    }
+
+    public interface NotifyPeerChange{
+        void peersHaveChanged(WifiP2pDevice device);
     }
 }
