@@ -3,8 +3,10 @@ package com.mst.karsac;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.util.Log;
 
 import com.mst.karsac.DbHelper.DbHelper;
@@ -20,6 +22,7 @@ public class GlobalApp extends Application {
     public static final String TIMESTAMP = "timestamp";
     public static final int SELF_INTEREST = 0;
     public static final int TRANSIENT_INTEREST = 1;
+    public static String source_mac;
 
     @Override
     public void onCreate() {
@@ -28,6 +31,16 @@ public class GlobalApp extends Application {
         dbHelper = new DbHelper(this);
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiManager.setWifiEnabled(true);
-        startService(new Intent(this, BackgroundService.class));
+        startWifi(wifiManager);
+    }
+
+    private void startWifi(WifiManager wifiManager) {
+        if (wifiManager.isWifiEnabled()) {
+            WifiInfo info = wifiManager.getConnectionInfo();
+            source_mac = info.getMacAddress();
+            Log.d("GLOBAL", source_mac);
+            startService(new Intent(this, BackgroundService.class));
+        } else
+            startWifi(wifiManager);
     }
 }

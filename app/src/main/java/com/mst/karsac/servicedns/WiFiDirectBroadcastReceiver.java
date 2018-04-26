@@ -59,7 +59,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
             WifiP2pDevice device = (WifiP2pDevice) intent
                     .getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
-            Log.d(TAG, "Device status -" + device.status);
+            Log.d(TAG, "Device status -" + device.status + " " + device.deviceAddress);
         }
     }
 }

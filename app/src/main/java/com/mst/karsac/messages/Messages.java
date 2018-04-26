@@ -9,7 +9,7 @@ import java.io.Serializable;
  * Created by ks2ht on 3/25/2018.
  */
 
-public class Messages implements Parcelable{
+public class Messages implements Serializable{
 
     public static final String MY_MESSAGE_TABLE_NAME = "mymessages";
 
@@ -76,36 +76,6 @@ public class Messages implements Parcelable{
             + COLUMN_LAT + " REAL," + COLUMN_LON + " REAL," + COLUMN_TYPE + " INTEGER, "
             + COLUMN_PAID + " REAL," + COLUMN_RECEIVED + " REAL," + COLUMN_PROMISED + " REAL)";
 
-    public static final Creator<Messages> CREATOR = new Creator<Messages>() {
-        @Override
-        public Messages createFromParcel(Parcel in) {
-            return new Messages(in);
-        }
-
-        @Override
-        public Messages[] newArray(int size) {
-            return new Messages[size];
-        }
-    };
-
-    protected Messages(Parcel in) {
-        imgPath = in.readString();
-        timestamp = in.readString();
-        tagsForCurrentImg = in.readString();
-        fileName = in.readString();
-        format = in.readString();
-        sourceMac = in.readString();
-        destAddr = in.readString();
-        rating = in.readInt();
-        type = in.readInt();
-        id = in.readInt();
-        size = in.readLong();
-        lat = in.readDouble();
-        lon = in.readDouble();
-        incentive_received = in.readFloat();
-        incentive_paid = in.readFloat();
-        incentive_promised = in.readFloat();
-    }
 
     public int getType() {
         return type;
@@ -157,30 +127,5 @@ public class Messages implements Parcelable{
 
     public double getLon() {
         return lon;
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeString(imgPath);
-        parcel.writeString(timestamp);
-        parcel.writeString(tagsForCurrentImg);
-        parcel.writeString(fileName);
-        parcel.writeString(format);
-        parcel.writeString(sourceMac);
-        parcel.writeString(destAddr);
-        parcel.writeInt(rating);
-        parcel.writeInt(type);
-        parcel.writeInt(id);
-        parcel.writeLong(size);
-        parcel.writeDouble(lat);
-        parcel.writeDouble(lon);
-        parcel.writeFloat(incentive_received);
-        parcel.writeFloat(incentive_paid);
-        parcel.writeFloat(incentive_promised);
     }
 }

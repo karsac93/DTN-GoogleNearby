@@ -72,7 +72,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                 Intent intent = new Intent(mContext, MessageDetail.class);
                 intent.putExtra("msg", msg);
                 Bundle bundle = new Bundle();
-                bundle.putParcelable(MSG_KEY, msg);
+                bundle.putSerializable(MSG_KEY, msg);
                 intent.putExtras(bundle);
                 mContext.startActivity(intent);
             }
@@ -87,9 +87,9 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                 menuInflater.inflate(R.menu.popup_menu, popupMenu.getMenu());
                 Menu menu = popupMenu.getMenu();
                 if(msg.type == 1)
-                    menu.findItem(R.id.rate).setVisible(false);
-                else
                     menu.findItem(R.id.rate).setVisible(true);
+                else
+                    menu.findItem(R.id.rate).setVisible(false);
 
                 popupMenu.setOnMenuItemClickListener(new MyMenuItemClickListener(msg));
                 popupMenu.show();
@@ -117,11 +117,15 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                     mapIntent.setPackage("com.google.android.apps.maps");
                     mContext.startActivity(mapIntent);
                     return true;
+
                 case R.id.delete:
                     DbHelper dbHelper = GlobalApp.dbHelper;
                     dbHelper.deleteMsg(msg);
                     listener.callback(msg.type);
                     return true;
+
+                case R.id.rate:
+
                 default:
             }
             return false;

@@ -44,7 +44,7 @@ public class MessageDetail extends AppCompatActivity {
 
         Bundle bundle = this.getIntent().getExtras();
         if (bundle != null) {
-            msg = bundle.getParcelable(MsgAdapter.MSG_KEY);
+            msg = (Messages) bundle.getSerializable(MsgAdapter.MSG_KEY);
             if (msg == null)
                 finish();
         }

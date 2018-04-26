@@ -46,7 +46,6 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
     RecyclerView msgRecyclerview;
     List<Messages> messagesList = new ArrayList<>();
     public static MsgAdapter msgAdapter;
-    String ownMacAddr;
     DbHelper messageDbHelper;
     FloatingActionButton fab_cam, fab_gal;
     public static int type;
@@ -68,10 +67,6 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
         msgRecyclerview = findViewById(R.id.recycler_msgs);
         msgAdapter = new MsgAdapter(this, messagesList);
-
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        final WifiInfo info = wifiManager.getConnectionInfo();
-        ownMacAddr = info.getMacAddress();
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         msgRecyclerview.setLayoutManager(layoutManager);
@@ -139,8 +134,8 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         double lon = location[1];
         int rating = 0;
         long size = file.length() / 1024;
-        String destAddr = "Not set";
-        String sourceMac = ownMacAddr;
+        String destAddr = "";
+        String sourceMac = GlobalApp.source_mac;
         String format = FilenameUtils.getExtension(file.getName());
         String fileName = FilenameUtils.getName(file.getName());
         String tagsForCurrentImg = "";

@@ -97,35 +97,38 @@ public class ChitchatAlgo {
 
     }
 
-    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest) {
+    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac) {
         List<ImageMessage> imageList = new ArrayList<>();
         List<Messages> my_self_Messages = dbHelper.getAllMessages(0);
         List<Messages> my_transient_messages = dbHelper.getAllMessages(1);
         my_self_Messages.addAll(my_transient_messages);
         for (Messages my_msg : my_self_Messages) {
-            String[] msg_tags = my_msg.getTagsForCurrentImg().split(",");
-            float my_value = 0.0f;
-            float neighbor_value = 0.0f;
-            for (String tags : msg_tags) {
-                tags = tags.trim();
-                for (Interest interest : my_interest) {
-                    Log.d("Chitchat", tags + " - " + interest);
-                    if (tags.equals(interest.getInterest())) {
-                        my_value = my_value + interest.getValue();
+            boolean flag = checkValid(my_msg, recevied_mac);
+            if(flag == false) {
+                String[] msg_tags = my_msg.getTagsForCurrentImg().split(",");
+                float my_value = 0.0f;
+                float neighbor_value = 0.0f;
+                for (String tags : msg_tags) {
+                    tags = tags.trim();
+                    for (Interest interest : my_interest) {
+                        Log.d("Chitchat", tags + " - " + interest);
+                        if (tags.equals(interest.getInterest())) {
+                            my_value = my_value + interest.getValue();
+                        }
+                    }
+                    for (Interest obtained : obtained_interest) {
+                        if (tags.equals(obtained.getInterest())) {
+                            Log.d("Chitchat", tags + " - " + obtained);
+                            neighbor_value = neighbor_value + obtained.getValue();
+                        }
                     }
                 }
-                for (Interest obtained : obtained_interest) {
-                    if (tags.equals(obtained.getInterest())) {
-                        Log.d("Chitchat", tags + " - " + obtained);
-                        neighbor_value = neighbor_value + obtained.getValue();
-                    }
+                Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
+                if (neighbor_value >= my_value) {
+                    String msg_string = getBase64String(my_msg.imgPath);
+                    ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                    imageList.add(img_exchange);
                 }
-            }
-            Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
-            if (neighbor_value >= my_value) {
-                String msg_string = getBase64String(my_msg.imgPath);
-                ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
-                imageList.add(img_exchange);
             }
         }
         MessageSerializer final_messages = new MessageSerializer(MessageSerializer.MESSAGE_MODE, imageList);
@@ -140,7 +143,7 @@ public class ChitchatAlgo {
             Bitmap bitmap = BitmapFactory.decodeFile(filePath);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             // In case you want to compress your image, here it's at 40%
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             img_string = Base64.encodeToString(byteArray, Base64.DEFAULT);
         } catch (Exception e) {
@@ -148,6 +151,33 @@ public class ChitchatAlgo {
         }
         Log.d("Chitchat", "Imgstring:" + img_string);
         return img_string;
+    }
+
+    public boolean checkValid(Messages msg, String received_mac) {
+        Log.d("CHITCHAT", "Message name and inside checkvalid to send the image:" + msg.fileName);
+        Log.d("CHITCHAT", "SourceMac:" + msg.sourceMac + " Received mac:" + received_mac);
+        boolean flag = false;
+        if (msg.sourceMac.equals(received_mac)) {
+            flag = true;
+        } else {
+            if (msg.destAddr != null && msg.destAddr.length() > 0) {
+                String[] intermediaries = msg.destAddr.split("|");
+                if(intermediaries != null && intermediaries.length > 0){
+                    boolean flag1 = false;
+                    for(String inter_mac : intermediaries){
+                        if(inter_mac.equals(received_mac)){
+                            flag1 = true;
+                            break;
+                        }
+                    }
+                    if (flag1)
+                        flag = true;
+                }
+
+            }
+        }
+        Log.d("CHITAHCAT", "Checkvalid conclusion:" + flag);
+        return flag;
     }
 
 }
