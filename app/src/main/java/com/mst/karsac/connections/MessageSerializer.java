@@ -2,6 +2,7 @@ package com.mst.karsac.connections;
 
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.interest.Interest;
+import com.mst.karsac.ratings.RatingPOJ;
 
 import java.io.Serializable;
 import java.net.ServerSocket;
@@ -17,6 +18,7 @@ public class MessageSerializer implements Serializable {
     String mode;
     String my_macaddress;
     Mode mode_type;
+    List<RatingPOJ> ratingPOJList;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
         this.my_interests = my_interests;

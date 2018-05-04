@@ -237,6 +237,7 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(Messages.COLUMN_TAGS, msg.tagsForCurrentImg);
+        contentValues.put(Messages.COLUMN_DESTADDR, msg.destAddr);
         return db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(msg.id)});
     }
 }

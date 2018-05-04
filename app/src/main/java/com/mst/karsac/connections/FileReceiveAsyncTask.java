@@ -9,6 +9,7 @@ import android.util.Log;
 import com.mst.karsac.Algorithm.ChitchatAlgo;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.RatingPOJ;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,6 +55,7 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
             incoming_msg = (MessageSerializer) ois.readObject();
             if (incoming_msg.mode.contains(MessageSerializer.INTEREST_MODE)) {
                 new ChitchatAlgo().growthAlgorithm(incoming_msg.my_interests, messageSerializer.my_interests);
+                handleRatings(incoming_msg.ratingPOJList);
                 obtained_msg = incoming_msg;
                 Log.d(TAG, "Checking the mode type actually:" + obtained_msg.mode_type.mode);
                 //Log.d(TAG, incoming_msg.my_interests.get(0).getInterest());
@@ -97,6 +99,24 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
         return null;
     }
 
+    private void handleRatings(List<RatingPOJ> ratingPOJList) {
+        List<RatingPOJ> myPOJList = GlobalApp.dbHelper.getRatings();
+        for(RatingPOJ receivedPoj : ratingPOJList){
+            for(RatingPOJ myPOJ : myPOJList){
+                if(receivedPoj.mac_address.contains(myPOJ.mac_address)){
+                    receivedPoj.average = (receivedPoj.average + myPOJ.average) / 2.0f;
+                    break;
+                }
+            }
+        }
+        for(RatingPOJ receivedPoj : ratingPOJList){
+            if(!receivedPoj.mac_address.contains(GlobalApp.source_mac))
+            {
+                GlobalApp.dbHelper.insertOrUpdateRating(receivedPoj);
+            }
+        }
+    }
+
     private void UpdateDbandSetImage(List<ImageMessage> received_msgs) {
         File imagesFolder = new File(Environment.getExternalStorageDirectory(), "DTN-Images");
         if (!imagesFolder.exists()) {
@@ -109,7 +129,6 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
             decodeBase64String(imageMessage.img_path, image);
             img_msg.imgPath = image.getAbsolutePath();
             img_msg.type = 1;
-            img_msg.destAddr = img_msg.destAddr + GlobalApp.source_mac + "|";
             GlobalApp.dbHelper.insertImageRecord(img_msg);
         }
     }

@@ -1,11 +1,15 @@
 package com.mst.karsac.ratings;
 
-public class RatingPOJ {
+import java.io.Serializable;
+
+public class RatingPOJ implements Serializable{
 
     public static final String RATINGS_TABLENAME = "ratings";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_MAC_ADDRESS = "mac_address";
     public static final String COLUMN_AVERAGE_RATING = "average_rating";
+
+    public String type = "";
 
     public static final String CREATE_TABLE_RATING = "CREATE TABLE " + RATINGS_TABLENAME + "("
             + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + COLUMN_MAC_ADDRESS + " TEXT,"

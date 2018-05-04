@@ -27,6 +27,7 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Settings.Setting;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
+import com.mst.karsac.ratings.RatingPOJ;
 import com.mst.karsac.servicedns.WiFiDirectBroadcastReceiver;
 
 import java.io.IOException;
@@ -63,6 +64,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     WifiP2pServiceRequest wifiP2pServiceRequest;
     WifiP2pDevice my_device;
     public static int num_failures = 0;
+    ArrayList<String> wifiaddresses = new ArrayList<>();
 
 
     @Override
@@ -176,8 +178,6 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                 if (instanceName.contains(INSTANCE)) {
                     Log.d(TAG, instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()));
                     String receivedMac = instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()).replace(":", "");
-//                    if (!lastDeviceMac.equals(receivedMac)) {
-//                        lastDeviceMac = receivedMac;
                     String deviceMac = GlobalApp.source_mac.replace(":", "");
                     boolean flag = false;
                     for (int i = 0; i < receivedMac.length(); i++) {
@@ -194,9 +194,6 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                     if (flag) {
                         connectP2p(wifiP2pDevice);
                     }
-//                    } else {
-//                        Log.d(TAG, "The same device was tried to connect previously and due to some  reason not successful!");
-//                    }
                 }
             }
         }, new WifiP2pManager.DnsSdTxtRecordListener() {
@@ -240,7 +237,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
-            if(my_device.status == WifiP2pDevice.AVAILABLE) {
+            if (my_device.status == WifiP2pDevice.AVAILABLE) {
                 manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
                     @Override
                     public void onSuccess() {
@@ -263,20 +260,32 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         Log.d(TAG, "Inside connectP2p");
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiP2pDevice.deviceAddress;
+        final String address = wifiP2pDevice.deviceAddress;
         config.wps.setup = WpsInfo.PBC;
-        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Log.d(TAG, "Connected successfully");
-                Toast.makeText(getApplicationContext(), "Connected to" + wifiP2pDevice.deviceName, Toast.LENGTH_SHORT).show();
+        boolean flag = false;
+        for (String wifip2pAddress : wifiaddresses) {
+            if (wifip2pAddress.contains(wifiP2pDevice.deviceAddress)) {
+                flag = true;
+                break;
             }
+        }
+        if (flag == false) {
+            manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+                @Override
+                public void onSuccess() {
+                    Log.d(TAG, "Connected successfully");
+                    Toast.makeText(getApplicationContext(), "Connected to" + wifiP2pDevice.deviceName, Toast.LENGTH_SHORT).show();
+                    wifiaddresses.add(address);
 
-            @Override
-            public void onFailure(int i) {
-                Log.d(TAG, "Connection Failed:" + i);
-                ;
-            }
-        });
+                }
+
+                @Override
+                public void onFailure(int i) {
+                    Log.d(TAG, "Connection Failed:" + i);
+                    wifiaddresses.remove(address);
+                }
+            });
+        }
     }
 
 
@@ -311,7 +320,10 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         int init_time = SharedPreferencesHandler.getIntPreferences(getApplicationContext(), GlobalApp.TIMESTAMP);
         SharedPreferencesHandler.setIntPreference(getApplicationContext(), GlobalApp.TIMESTAMP, init_time + 1);
         List<Interest> my_interests = new ChitchatAlgo().decayingFunction(SharedPreferencesHandler.getIntPreferences(this, GlobalApp.TIMESTAMP));
+        Log.d(TAG, "Size of decayed interest:" + my_interests.size());
         my_messageSerializer = new MessageSerializer(my_interests, MessageSerializer.INTEREST_MODE);
+        List<RatingPOJ> ratingPOJS = GlobalApp.dbHelper.getRatings();
+        my_messageSerializer.ratingPOJList = ratingPOJS;
         String mode_type = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.MODE_SELECTION);
         Mode mode;
         if (mode_type.contains(Setting.PUSH) || mode_type.trim().length() == 0) {
@@ -353,11 +365,13 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
     @Override
     public MessageSerializer getTsInterests() {
+        Log.d(TAG, "Size of decayed interest:" + my_messageSerializer.my_interests.size());
         return my_messageSerializer;
     }
 
     @Override
     public void setMessageSerializer(MessageSerializer msg) {
+        Log.d(TAG, "Size of decayed interest:" + msg.my_interests.size());
         my_messageSerializer = msg;
     }
 

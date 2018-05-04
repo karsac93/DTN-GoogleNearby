@@ -127,6 +127,9 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
 
                 case R.id.rate:
                     Intent intent = new Intent(mContext, RatingsActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("Message", msg);
+                    intent.putExtras(bundle);
                     mContext.startActivity(intent);
                 default:
             }

@@ -168,7 +168,7 @@ public class ChitchatAlgo {
             Bitmap bitmap = BitmapFactory.decodeFile(filePath);
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             // In case you want to compress your image, here it's at 40%
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             img_string = Base64.encodeToString(byteArray, Base64.DEFAULT);
         } catch (Exception e) {
@@ -188,7 +188,8 @@ public class ChitchatAlgo {
         } else {
             Log.d("Chitchat", "Inside valid checking:" + msg.destAddr);
             if (msg.destAddr != null && msg.destAddr.length() > 0) {
-                String[] intermediaries = msg.destAddr.split("|");
+                String[] intermediaries = msg.destAddr.split("\\|");
+                Log.d("chitchat", "size:" + intermediaries.length);
                 if(intermediaries != null && intermediaries.length > 0){
                     boolean flag1 = false;
                     for(String inter_mac : intermediaries){
