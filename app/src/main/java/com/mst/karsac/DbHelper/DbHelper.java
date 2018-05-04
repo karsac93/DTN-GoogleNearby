@@ -11,6 +11,8 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.RatingPOJ;
+import com.mst.karsac.ratings.RatingsActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,6 +28,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "dtndatabase";
+    private static final String TAG = "DBHelper";
     Context context;
 
     public DbHelper(Context context) {
@@ -39,6 +42,7 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d("DbHelper-create", Interest.CREATE_TABLE_INTEREST);
         sqLiteDatabase.execSQL(Interest.CREATE_TABLE_INTEREST);
         sqLiteDatabase.execSQL(Messages.CREATE_TABLE_MESSAGE);
+        sqLiteDatabase.execSQL(RatingPOJ.CREATE_TABLE_RATING);
     }
 
     @Override
@@ -47,7 +51,7 @@ public class DbHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
 
-    public int updateInterest(String interest, float value, int type){
+    public int updateInterest(String interest, float value, int type) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(Interest.INTEREST_VALUE, value);
@@ -56,13 +60,13 @@ public class DbHelper extends SQLiteOpenHelper {
 
     public long insertInterest(String interest, int type, float value) {
         long id = 0;
-        int count = 0;
+        int count;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(Interest.COLUMN_INTEREST, interest);
         values.put(Interest.INTEREST_VALUE, value);
         values.put(Interest.TYPE, type);
-        values.put(Interest.COLUMN_TIMESTAMP, SharedPreferencesHandler.getTimestamp(context, GlobalApp.TIMESTAMP));
+        values.put(Interest.COLUMN_TIMESTAMP, SharedPreferencesHandler.getIntPreferences(context, GlobalApp.TIMESTAMP));
         String selectQuery = "SELECT * FROM " + Interest.TABLE_NAME_INTEREST + " WHERE " +
                 Interest.COLUMN_INTEREST + "='" + interest + "'";
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -72,6 +76,43 @@ public class DbHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    public void insertOrUpdateRating(RatingPOJ ratingPOJ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + RatingPOJ.RATINGS_TABLENAME + " WHERE " + RatingPOJ.COLUMN_MAC_ADDRESS + "='" + ratingPOJ.mac_address + "'";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        int count = cursor.getCount();
+        if (count == 0) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(RatingPOJ.COLUMN_MAC_ADDRESS, ratingPOJ.mac_address);
+            contentValues.put(RatingPOJ.COLUMN_AVERAGE_RATING, ratingPOJ.average);
+            db.insert(RatingPOJ.RATINGS_TABLENAME, null, contentValues);
+            Log.d(TAG, "Insertion is successful");
+        }
+        else{
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(RatingPOJ.COLUMN_AVERAGE_RATING, ratingPOJ.average);
+            db.update(RatingPOJ.RATINGS_TABLENAME, contentValues, RatingPOJ.COLUMN_MAC_ADDRESS + "=?", new String[]{ratingPOJ.mac_address});
+            Log.d(TAG, "Update is successful");
+        }
+
+    }
+
+    public List<RatingPOJ> getRatings(){
+        List<RatingPOJ> ratingsList = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + RatingPOJ.RATINGS_TABLENAME;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if(cursor.moveToFirst()){
+            do{
+                RatingPOJ ratingPOJ = new RatingPOJ();
+                ratingPOJ.mac_address = cursor.getString(cursor.getColumnIndex(RatingPOJ.COLUMN_MAC_ADDRESS));
+                ratingPOJ.average = cursor.getFloat(cursor.getColumnIndex(RatingPOJ.COLUMN_AVERAGE_RATING));
+                ratingsList.add(ratingPOJ);
+            }while (cursor.moveToNext());
+        }
+        return ratingsList;
+    }
 
     public List<Interest> getInterests(int type) {
         List<Interest> interestList = new ArrayList<>();
@@ -109,7 +150,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 
     public long insertImageRecord(Messages message) {
-        long id = 0;
+        long id;
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(Messages.COLUMN_IMG_PATH, message.getImgPath());
@@ -198,5 +239,4 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(Messages.COLUMN_TAGS, msg.tagsForCurrentImg);
         return db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(msg.id)});
     }
-
 }

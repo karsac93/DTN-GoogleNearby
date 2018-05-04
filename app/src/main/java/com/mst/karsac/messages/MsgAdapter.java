@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
+import com.mst.karsac.ratings.RatingsActivity;
 
 /**
  * Created by ks2ht on 3/25/2018.
@@ -125,7 +126,8 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                     return true;
 
                 case R.id.rate:
-
+                    Intent intent = new Intent(mContext, RatingsActivity.class);
+                    mContext.startActivity(intent);
                 default:
             }
             return false;

@@ -116,4 +116,9 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="title_activity_setting">Setting</string>
+    <string name="title_activity_pull">Map</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="location_string">Current Location :</string>
 </resources>

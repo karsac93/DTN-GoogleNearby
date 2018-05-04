@@ -3,11 +3,7 @@ package com.mst.karsac.messages;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -26,7 +22,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -37,6 +32,7 @@ import java.util.List;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
+import com.mst.karsac.Utils.LocationHandler;
 
 public class InboxActivity extends AppCompatActivity implements MyListener {
 
@@ -134,7 +130,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
             img_path = image.getAbsolutePath();
         File file = new File(img_path);
         int type = 0;
-        double[] location = getLocation();
+        double[] location = new LocationHandler().getLocation(getApplicationContext());
         double lat = location[0];
         double lon = location[1];
         int rating = 0;
@@ -203,21 +199,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         return true;
     }
 
-    private double[] getLocation() {
-        double latitude = 0.0;
-        double longitude = 0.0;
-        try {
-            LocationManager locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
-            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if (location != null) {
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
-            }
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        }
-        return new double[]{latitude, longitude};
-    }
+
 
     @Override
     public void callback(int type) {

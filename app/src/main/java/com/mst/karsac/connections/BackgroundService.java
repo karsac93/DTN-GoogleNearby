@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.mst.karsac.Algorithm.ChitchatAlgo;
 import com.mst.karsac.GlobalApp;
+import com.mst.karsac.Settings.Setting;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.servicedns.WiFiDirectBroadcastReceiver;
@@ -35,6 +36,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -42,7 +44,6 @@ import java.util.TimerTask;
 
 public class BackgroundService extends Service implements WifiP2pManager.ConnectionInfoListener, TsInterestsInterface, WiFiDirectBroadcastReceiver.NotifyPeerChange {
     public static final String TAG = "BackgroundService";
-    public static final String TXTRECORD_PROP_AVAILABLE = "available";
     public static String SERVICE_INSTANCE = "_wifidemotest";
     public static final String INSTANCE = "_wifidemotest";
     public static final String SERVICE_REG_TYPE = "_presence._tcp";
@@ -57,10 +58,11 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     public static final String CLIENT = "client";
     MessageSerializer my_messageSerializer = null;
     public static String lastDeviceMac = null;
-    public static final int SERVICE_BROADCASTING_INTERVAL = 120000;
-    public static final int SERVICE_DISCOVERING_INTERVAL = 120000;
+    public static final int SERVICE_BROADCASTING_INTERVAL = 60000;
+    public static final int SERVICE_DISCOVERING_INTERVAL = 60000;
     WifiP2pServiceRequest wifiP2pServiceRequest;
     WifiP2pDevice my_device;
+    public static int num_failures = 0;
 
 
     @Override
@@ -80,16 +82,19 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         this.registerReceiver(receiver, intentFilter);
         SERVICE_INSTANCE = SERVICE_INSTANCE + "|" + GlobalApp.source_mac;
         wifiP2pServiceRequest = WifiP2pDnsSdServiceRequest.newInstance();
-        threestepstodiscovery();
+
     }
 
+
     public void threestepstodiscovery() {
-        Log.d(TAG, "Listeners setup");
-        startListeners();
-        Log.d(TAG, "Prepare discovery");
-        prepareServiceDiscovery();
-        Log.d(TAG, "start service discovery");
-        startServiceDiscovery();
+        if ((my_device != null && my_device.status == WifiP2pDevice.AVAILABLE)) {
+            Log.d(TAG, "Listeners setup");
+            startListeners();
+            Log.d(TAG, "Prepare discovery");
+            prepareServiceDiscovery();
+            Log.d(TAG, "start service discovery");
+            startServiceDiscovery();
+        }
     }
 
     private void startServiceDiscovery() {
@@ -110,19 +115,27 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                             @Override
                             public void onFailure(int i) {
                                 Log.d(TAG, "discoverServices Failure:" + i);
-                                manager.stopPeerDiscovery(channel, new WifiP2pManager.ActionListener() {
-                                    @Override
-                                    public void onSuccess() {
-                                        startListeners();
-                                        prepareServiceDiscovery();
-                                        startServiceDiscovery();
-                                    }
+                                num_failures = num_failures + 1;
+                                if (num_failures < 10) {
+                                    manager.stopPeerDiscovery(channel, new WifiP2pManager.ActionListener() {
+                                        @Override
+                                        public void onSuccess() {
+                                            manager.removeServiceRequest(channel, wifiP2pServiceRequest, null);
+                                            manager.clearServiceRequests(channel, null);
+                                            startServiceDiscovery();
+                                        }
 
-                                    @Override
-                                    public void onFailure(int i) {
-                                        Log.d(TAG, "stopPeerDiscovery Failure:" + i);
+                                        @Override
+                                        public void onFailure(int i) {
+                                            Log.d(TAG, "stopPeerDiscovery Failure:" + i);
+                                        }
+                                    });
+                                } else {
+                                    num_failures = 0;
+                                    if (my_device.status == WifiP2pDevice.AVAILABLE) {
+                                        notifyCompleteClient();
                                     }
-                                });
+                                }
                             }
                         });
                     }
@@ -146,9 +159,12 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     private Runnable mServiceDiscoveringRunnable = new Runnable() {
         @Override
         public void run() {
-            startServiceDiscovery();
-            mServiceBroadcastingHandler
-                    .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
+            if (my_device.status == WifiP2pDevice.AVAILABLE) {
+                Log.d(TAG, "Running service discovery in the background");
+                startServiceDiscovery();
+                mServiceBroadcastingHandler
+                        .postDelayed(mServiceDiscoveringRunnable, SERVICE_DISCOVERING_INTERVAL);
+            }
         }
     };
 
@@ -160,6 +176,8 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                 if (instanceName.contains(INSTANCE)) {
                     Log.d(TAG, instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()));
                     String receivedMac = instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()).replace(":", "");
+//                    if (!lastDeviceMac.equals(receivedMac)) {
+//                        lastDeviceMac = receivedMac;
                     String deviceMac = GlobalApp.source_mac.replace(":", "");
                     boolean flag = false;
                     for (int i = 0; i < receivedMac.length(); i++) {
@@ -176,6 +194,9 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                     if (flag) {
                         connectP2p(wifiP2pDevice);
                     }
+//                    } else {
+//                        Log.d(TAG, "The same device was tried to connect previously and due to some  reason not successful!");
+//                    }
                 }
             }
         }, new WifiP2pManager.DnsSdTxtRecordListener() {
@@ -184,7 +205,6 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
             }
         });
     }
-
 
 
     private void startListeners() {
@@ -220,48 +240,43 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     private Runnable mServiceBroadcastingRunnable = new Runnable() {
         @Override
         public void run() {
-            manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                }
+            if(my_device.status == WifiP2pDevice.AVAILABLE) {
+                manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
 
-                @Override
-                public void onFailure(int error) {
-                }
-            });
-            mServiceBroadcastingHandler
-                    .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+                    }
+
+                    @Override
+                    public void onFailure(int error) {
+                    }
+                });
+
+                mServiceBroadcastingHandler
+                        .postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+            }
+
         }
     };
-
-
 
     private void connectP2p(final WifiP2pDevice wifiP2pDevice) {
         Log.d(TAG, "Inside connectP2p");
         WifiP2pConfig config = new WifiP2pConfig();
         config.deviceAddress = wifiP2pDevice.deviceAddress;
-        if(lastDeviceMac != wifiP2pDevice.deviceAddress)
-        {
         config.wps.setup = WpsInfo.PBC;
-        if (wifiP2pDevice.status != WifiP2pDevice.CONNECTED) {
-            lastDeviceMac = wifiP2pDevice.deviceAddress;
-            manager.connect(channel, config, new WifiP2pManager.ActionListener() {
-                @Override
-                public void onSuccess() {
-                    Log.d(TAG, "Connected successfully");
-                    Toast.makeText(getApplicationContext(), "Connected to" + wifiP2pDevice.deviceName, Toast.LENGTH_SHORT).show();
-                }
+        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.d(TAG, "Connected successfully");
+                Toast.makeText(getApplicationContext(), "Connected to" + wifiP2pDevice.deviceName, Toast.LENGTH_SHORT).show();
+            }
 
-                @Override
-                public void onFailure(int i) {
-                    Log.d(TAG, "Connection Failed:" + i);
-                    lastDeviceMac = "";
-                }
-            });
-        }
-        } else {
-            Log.d(TAG, "This was already connected last time:" + lastDeviceMac + " Device:" + wifiP2pDevice.deviceAddress);
-        }
+            @Override
+            public void onFailure(int i) {
+                Log.d(TAG, "Connection Failed:" + i);
+                ;
+            }
+        });
     }
 
 
@@ -293,10 +308,34 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo wifiP2pInfo) {
         Log.d(TAG, "Inside onConnectionAvailable method");
-        int init_time = SharedPreferencesHandler.getTimestamp(getApplicationContext(), GlobalApp.TIMESTAMP);
-        SharedPreferencesHandler.setTimestamp(getApplicationContext(), GlobalApp.TIMESTAMP, init_time + 1);
-        List<Interest> my_interests = new ChitchatAlgo().decayingFunction(SharedPreferencesHandler.getTimestamp(this, GlobalApp.TIMESTAMP));
+        int init_time = SharedPreferencesHandler.getIntPreferences(getApplicationContext(), GlobalApp.TIMESTAMP);
+        SharedPreferencesHandler.setIntPreference(getApplicationContext(), GlobalApp.TIMESTAMP, init_time + 1);
+        List<Interest> my_interests = new ChitchatAlgo().decayingFunction(SharedPreferencesHandler.getIntPreferences(this, GlobalApp.TIMESTAMP));
         my_messageSerializer = new MessageSerializer(my_interests, MessageSerializer.INTEREST_MODE);
+        String mode_type = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.MODE_SELECTION);
+        Mode mode;
+        if (mode_type.contains(Setting.PUSH) || mode_type.trim().length() == 0) {
+            mode = new Mode(Setting.PUSH);
+        } else {
+            mode = new Mode(Setting.PULL);
+            mode.lat_lon = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.LAT_LON_KEY);
+            mode.radius = SharedPreferencesHandler.getRadiusPreferences(getApplicationContext(), Setting.RADIUS);
+            String[] pull_tags = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.TAG_KEYS).split(",");
+            List<Interest> new_interest = new ArrayList<>();
+            if (pull_tags != null && pull_tags.length > 0) {
+                for (String pull_interest : pull_tags) {
+                    pull_interest = pull_interest.trim();
+                    for (Interest nor_interest : my_interests) {
+                        if (pull_interest.equals(nor_interest)) {
+                            new_interest.add(nor_interest);
+                        }
+                    }
+
+                }
+            }
+            my_messageSerializer.my_interests = new_interest;
+        }
+        my_messageSerializer.mode_type = mode;
         if (wifiP2pInfo.groupFormed && wifiP2pInfo.isGroupOwner) {
             Log.d(TAG, "Server");
             FileReceiveAsyncTask fileReceiveAsyncTask = new FileReceiveAsyncTask(this, my_messageSerializer, BackgroundService.OWNER);
@@ -318,6 +357,11 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     }
 
     @Override
+    public void setMessageSerializer(MessageSerializer msg) {
+        my_messageSerializer = msg;
+    }
+
+    @Override
     public void notifyComplete() {
         disconnect();
         deletePersistentGroups();
@@ -336,18 +380,18 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
     @Override
     public void notifyCompleteClient() {
-            deletePersistentGroups();
-            manager.clearLocalServices(channel, null);
-            manager.clearLocalServices(channel, null);
-            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            wifiManager.setWifiEnabled(false);
-            wifiManager.setWifiEnabled(true);
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    threestepstodiscovery();
-                }
-            }, 10000);
+        deletePersistentGroups();
+        manager.clearLocalServices(channel, null);
+        manager.clearLocalServices(channel, null);
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiManager.setWifiEnabled(false);
+        wifiManager.setWifiEnabled(true);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                threestepstodiscovery();
+            }
+        }, 10000);
 
     }
 
@@ -396,6 +440,9 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     @Override
     public void peersHaveChanged(WifiP2pDevice device) {
         my_device = device;
+        if (device.status == WifiP2pDevice.AVAILABLE) {
+            threestepstodiscovery();
+        }
     }
 
     public static class FileTransferAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -448,6 +495,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "Inside onstartcommand");
         return START_NOT_STICKY;
     }
 }

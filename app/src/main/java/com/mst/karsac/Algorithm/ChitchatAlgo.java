@@ -2,14 +2,17 @@ package com.mst.karsac.Algorithm;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.util.Base64;
 import android.util.Log;
 
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 
+import com.mst.karsac.Settings.Setting;
 import com.mst.karsac.connections.ImageMessage;
 import com.mst.karsac.connections.MessageSerializer;
+import com.mst.karsac.connections.Mode;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
 
@@ -97,7 +100,7 @@ public class ChitchatAlgo {
 
     }
 
-    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac) {
+    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac, Mode mode_type) {
         List<ImageMessage> imageList = new ArrayList<>();
         List<Messages> my_self_Messages = dbHelper.getAllMessages(0);
         List<Messages> my_transient_messages = dbHelper.getAllMessages(1);
@@ -119,15 +122,37 @@ public class ChitchatAlgo {
                     for (Interest obtained : obtained_interest) {
                         if (tags.equals(obtained.getInterest())) {
                             Log.d("Chitchat", tags + " - " + obtained);
+                            my_msg.destAddr = recevied_mac + "|";
+                            GlobalApp.dbHelper.updateMsg(my_msg);
                             neighbor_value = neighbor_value + obtained.getValue();
                         }
                     }
                 }
                 Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
                 if (neighbor_value >= my_value) {
-                    String msg_string = getBase64String(my_msg.imgPath);
-                    ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
-                    imageList.add(img_exchange);
+                    Log.d("Chitchat", mode_type.mode);
+                    if(mode_type.mode.contains(Setting.PULL) && mode_type.lat_lon != null &&
+                            mode_type.lat_lon.trim().length() > 0 && mode_type.lat_lon.contains(",")){
+                        String[] latlng = mode_type.lat_lon.split(",");
+                        double pull_lat = Double.parseDouble(latlng[0].trim());
+                        double pull_lon = Double.parseDouble(latlng[1].trim());
+                        float[] results = new float[1];
+                        Location.distanceBetween(pull_lat, pull_lon, my_msg.lat, my_msg.lon, results);
+                        float distance_in_miles = results[0];
+                        boolean is_Within_radius = distance_in_miles < (mode_type.radius * 1500);
+                        Log.d("chitchat", "Pull condition:" + is_Within_radius);
+                        if(is_Within_radius){
+                            Log.d("chitchat", "Pull condition statisfied, hence adding to the list");
+                            String msg_string = getBase64String(my_msg.imgPath);
+                            ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                            imageList.add(img_exchange);
+                        }
+                    }
+                    else{
+                        String msg_string = getBase64String(my_msg.imgPath);
+                        ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                        imageList.add(img_exchange);
+                    }
                 }
             }
         }
@@ -159,12 +184,15 @@ public class ChitchatAlgo {
         boolean flag = false;
         if (msg.sourceMac.equals(received_mac)) {
             flag = true;
+            return flag;
         } else {
+            Log.d("Chitchat", "Inside valid checking:" + msg.destAddr);
             if (msg.destAddr != null && msg.destAddr.length() > 0) {
                 String[] intermediaries = msg.destAddr.split("|");
                 if(intermediaries != null && intermediaries.length > 0){
                     boolean flag1 = false;
                     for(String inter_mac : intermediaries){
+                        Log.d("ChitchatAlgo", inter_mac);
                         if(inter_mac.equals(received_mac)){
                             flag1 = true;
                             break;

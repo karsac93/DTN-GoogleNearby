@@ -16,6 +16,7 @@ public class MessageSerializer implements Serializable {
     List<ImageMessage> my_mesages;
     String mode;
     String my_macaddress;
+    Mode mode_type;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
         this.my_interests = my_interests;

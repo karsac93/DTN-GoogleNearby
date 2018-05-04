@@ -55,16 +55,18 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
             if (incoming_msg.mode.contains(MessageSerializer.INTEREST_MODE)) {
                 new ChitchatAlgo().growthAlgorithm(incoming_msg.my_interests, messageSerializer.my_interests);
                 obtained_msg = incoming_msg;
+                Log.d(TAG, "Checking the mode type actually:" + obtained_msg.mode_type.mode);
                 //Log.d(TAG, incoming_msg.my_interests.get(0).getInterest());
                 if (role.contains(BackgroundService.OWNER)) {
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, messageSerializer);
+                    myListener.setMessageSerializer(messageSerializer);
                     fileTransferAsyncTask.execute();
                     ois.close();
                     serverSocket.close();
                     return incoming_msg.mode;
                 }
                 if (role.contains(BackgroundService.CLIENT)) {
-                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(incoming_msg.my_interests, messageSerializer.my_interests, incoming_msg.my_macaddress);
+                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(incoming_msg.my_interests, messageSerializer.my_interests, incoming_msg.my_macaddress, incoming_msg.mode_type);
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, message_transfer);
                     fileTransferAsyncTask.execute();
                     ois.close();
@@ -76,15 +78,15 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                 UpdateDbandSetImage(received_msgs);
                 if (role.contains(BackgroundService.OWNER)) {
                     MessageSerializer my_serialized_interest = myListener.getTsInterests();
-                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(messageSerializer.my_interests, my_serialized_interest.my_interests, messageSerializer.my_macaddress);
+                    Log.d(TAG, my_serialized_interest.my_interests.get(0).getInterest());
+                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(messageSerializer.my_interests, my_serialized_interest.my_interests, messageSerializer.my_macaddress, messageSerializer.mode_type);
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, message_transfer);
                     fileTransferAsyncTask.execute();
                 }
                 ois.close();
                 serverSocket.close();
                 return incoming_msg.mode;
-            }
-            else if(incoming_msg.mode.contains(MessageSerializer.RECEIVED_MODE)){
+            } else if (incoming_msg.mode.contains(MessageSerializer.RECEIVED_MODE)) {
                 ois.close();
                 serverSocket.close();
                 myListener.notifyComplete();

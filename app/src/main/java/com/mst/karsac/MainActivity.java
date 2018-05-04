@@ -2,18 +2,10 @@ package com.mst.karsac;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
-import android.net.wifi.p2p.WifiP2pManager;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
-import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceRequest;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.AppBarLayout;
@@ -30,21 +22,17 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import com.mst.karsac.Settings.Setting;
 import com.mst.karsac.cardivewProg.Album;
 import com.mst.karsac.cardivewProg.AlbumsAdapter;
 import com.mst.karsac.cardivewProg.GridSpacingItemDecoration;
 import com.mst.karsac.connections.BackgroundService;
-import com.mst.karsac.servicedns.WiFiDirectBroadcastReceiver;
-import com.mst.karsac.servicedns.WiFiP2pService;
 
 public class MainActivity extends AppCompatActivity {
 

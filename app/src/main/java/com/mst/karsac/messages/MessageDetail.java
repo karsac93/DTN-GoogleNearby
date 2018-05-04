@@ -84,6 +84,7 @@ public class MessageDetail extends AppCompatActivity {
                 DbHelper dbHelper = GlobalApp.dbHelper;
                 msg.tagsForCurrentImg = tagsObtained;
                 dbHelper.updateMsg(msg);
+                if(!tagsObtained.contains(",")) {tagsObtained = tagsObtained.concat(",");}
                 String[] interests = tagsObtained.split(",");
                 for (String intrst : interests)
                     dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
