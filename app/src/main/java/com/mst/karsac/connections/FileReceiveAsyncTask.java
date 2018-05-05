@@ -25,7 +25,7 @@ import java.util.List;
 public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
     public static final String TAG = FileReceiveAsyncTask.class.getSimpleName();
     private Context context;
-    MessageSerializer messageSerializer;
+    static MessageSerializer messageSerializer = new MessageSerializer();
     String role;
     TsInterestsInterface myListener;
     MessageSerializer obtained_msg;
@@ -60,6 +60,7 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                 Log.d(TAG, "Checking the mode type actually:" + obtained_msg.mode_type.mode);
                 //Log.d(TAG, incoming_msg.my_interests.get(0).getInterest());
                 if (role.contains(BackgroundService.OWNER)) {
+                    Log.d(TAG, "Check obtained interests:" + messageSerializer.my_interests.get(0).getInterest());
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, messageSerializer);
                     myListener.setMessageSerializer(messageSerializer);
                     fileTransferAsyncTask.execute();
@@ -80,7 +81,6 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                 UpdateDbandSetImage(received_msgs);
                 if (role.contains(BackgroundService.OWNER)) {
                     MessageSerializer my_serialized_interest = myListener.getTsInterests();
-                    Log.d(TAG, my_serialized_interest.my_interests.get(0).getInterest());
                     MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(messageSerializer.my_interests, my_serialized_interest.my_interests, messageSerializer.my_macaddress, messageSerializer.mode_type);
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, message_transfer);
                     fileTransferAsyncTask.execute();

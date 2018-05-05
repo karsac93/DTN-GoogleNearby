@@ -34,4 +34,7 @@ public class MessageSerializer implements Serializable {
     public MessageSerializer(String mode){
         this.mode = mode;
     }
+
+    public MessageSerializer() {
+    }
 }

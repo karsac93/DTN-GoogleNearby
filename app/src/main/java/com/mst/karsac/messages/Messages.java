@@ -29,6 +29,7 @@ public class Messages implements Serializable{
     public static final String COLUMN_PROMISED = "promised";
     public static final String COLUMN_RECEIVED = "received";
     public static final String COLUMN_PAID = "paid";
+    public static final String COLUMN_UUID = "uuid";
 
     public String imgPath;
     public String timestamp;
@@ -46,11 +47,12 @@ public class Messages implements Serializable{
     public float incentive_promised;
     public float incentive_received;
     public float incentive_paid;
+    public String uuid;
 
     public Messages(String imgPath, String timestamp, String tagsForCurrentImg, String fileName,
                     String format, String sourceMac, String destAddr, int rating, int type,
                     long size, double lat, double lon, float incentive_paid, float incentive_promised,
-                    float incentive_received) {
+                    float incentive_received, String uuid) {
         this.imgPath = imgPath;
         this.timestamp = timestamp;
         this.tagsForCurrentImg = tagsForCurrentImg;
@@ -66,10 +68,11 @@ public class Messages implements Serializable{
         this.incentive_promised = incentive_promised;
         this.incentive_paid = incentive_paid;
         this.incentive_received = incentive_received;
+        this.uuid = uuid;
     }
 
     public static final String CREATE_TABLE_MESSAGE = "CREATE TABLE " + MY_MESSAGE_TABLE_NAME + "("
-            + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + COLUMN_IMG_PATH + " imgPath TEXT,"
+            + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +COLUMN_UUID + " TEXT," + COLUMN_IMG_PATH + " imgPath TEXT,"
             + COLUMN_TIMESTAMP + " TEXT," +  COLUMN_TAGS + " TEXT,"
             + COLUMN_FILENAME + " TEXT," + COLUMN_FORMAT + " TEXT," + COLUMN_SRCMAC + " TEXT,"
             + COLUMN_DESTADDR + " TEXT," +  COLUMN_SIZE + " INTEGER," + COLUMN_RATING + " INTEGER,"
@@ -128,4 +131,6 @@ public class Messages implements Serializable{
     public double getLon() {
         return lon;
     }
+
+    public String getUuid() {return uuid;}
 }

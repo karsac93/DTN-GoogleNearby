@@ -193,9 +193,10 @@ public class DbHelper extends SQLiteOpenHelper {
                 float incetive_paid = cursor.getFloat(cursor.getColumnIndex(Messages.COLUMN_PAID));
                 float incetive_received = cursor.getFloat(cursor.getColumnIndex(Messages.COLUMN_RECEIVED));
                 float incetive_promised = cursor.getFloat(cursor.getColumnIndex(Messages.COLUMN_PROMISED));
+                String uuid = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_UUID));
                 Messages messages = new Messages(imgPath, timestamp, tagsForCurrentImg, fileName,
                         format, sourceMac, destAddr, rating, type_msg, size, lat, lon, incetive_paid,
-                        incetive_promised, incetive_received);
+                        incetive_promised, incetive_received, uuid);
                 messages.id = id;
                 messagesList.add(messages);
             } while (cursor.moveToNext());

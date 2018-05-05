@@ -52,6 +52,7 @@ public class ChitchatAlgo {
     }
 
     public void growthAlgorithm(List<Interest> obtained_interest, List<Interest> my_self_interests) {
+        Log.d("Chitchat", my_self_interests.size() + " - ////////Size of my interest ");
         boolean flag;
         for (Interest obtained : obtained_interest) {
             flag = false;
@@ -122,17 +123,17 @@ public class ChitchatAlgo {
                     for (Interest obtained : obtained_interest) {
                         if (tags.equals(obtained.getInterest())) {
                             Log.d("Chitchat", tags + " - " + obtained);
-                            my_msg.destAddr = recevied_mac + "|";
                             GlobalApp.dbHelper.updateMsg(my_msg);
                             neighbor_value = neighbor_value + obtained.getValue();
                         }
                     }
                 }
                 Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
-                if (neighbor_value >= my_value) {
+                if (neighbor_value >= my_value && neighbor_value != 0.0f && my_value != 0.0f) {
                     Log.d("Chitchat", mode_type.mode);
                     if(mode_type.mode.contains(Setting.PULL) && mode_type.lat_lon != null &&
                             mode_type.lat_lon.trim().length() > 0 && mode_type.lat_lon.contains(",")){
+                        my_msg.destAddr = recevied_mac + "|";
                         String[] latlng = mode_type.lat_lon.split(",");
                         double pull_lat = Double.parseDouble(latlng[0].trim());
                         double pull_lon = Double.parseDouble(latlng[1].trim());
@@ -149,6 +150,7 @@ public class ChitchatAlgo {
                         }
                     }
                     else{
+                        my_msg.destAddr = recevied_mac + "|";
                         String msg_string = getBase64String(my_msg.imgPath);
                         ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
                         imageList.add(img_exchange);

@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
@@ -142,13 +143,14 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         Log.d("Inbox", "Format:" + format);
         Log.d("Inbox", "Filename:" + fileName);
         String tagsForCurrentImg = "";
-
+        String uuid = UUID.randomUUID().toString() + GlobalApp.source_mac;
+        Log.d("InboxActivity", uuid);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String timestamp = String.valueOf(sdf.format(file.lastModified()));
         Log.d("timestamp:", timestamp);
         Messages messages = new Messages(uri.toString(), timestamp, tagsForCurrentImg,
                 fileName, format, sourceMac, destAddr, rating, 0, size, lat, lon,
-                0.0f, 0.0f, 0.0f);
+                0.0f, 0.0f, 0.0f, uuid);
         messages.imgPath = img_path;
         Log.d("FilePath", messages.imgPath);
         messageDbHelper.insertImageRecord(messages);

@@ -21,6 +21,7 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.LocationHandler;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
+import com.mst.karsac.connections.BackgroundService;
 
 public class PullActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -71,7 +72,7 @@ public class PullActivity extends FragmentActivity implements OnMapReadyCallback
                     Log.d(TAG, "lat lon set in shared preferences");
                 }
                 String radius_string = radius.getText().toString();
-                if (radius_string.trim().length() > 0) {
+                if (radius_string.trim().length() > 0 && lat_long_location.contains(",")) {
                     try {
                         int radius_int = Integer.parseInt(radius_string);
                         SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.RADIUS, radius_int);
@@ -79,6 +80,7 @@ public class PullActivity extends FragmentActivity implements OnMapReadyCallback
                         Toast.makeText(getApplicationContext(), "Enter a valid radius!", Toast.LENGTH_SHORT).show();
                     }
                 }
+                SharedPreferencesHandler.setStringPreferences(getApplicationContext(), Setting.MODE_SELECTION, Setting.PULL);
                 Toast.makeText(getApplicationContext(), "Pull mode preferences saved!", Toast.LENGTH_SHORT).show();
             }
         });

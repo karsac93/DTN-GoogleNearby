@@ -3,6 +3,7 @@ package com.mst.karsac.cardivewProg;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
+import com.mst.karsac.Neighbours.NeighboursActivity;
 import com.mst.karsac.interest.InterestActivity;
 import com.mst.karsac.R;
 import com.mst.karsac.messages.InboxActivity;
@@ -44,6 +46,10 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
                             break;
                         case "Messages":
                             intent = new Intent(mContext, InboxActivity.class);
+                            mContext.startActivity(intent);
+                            break;
+                        case "Neighbours":
+                            intent = new Intent(mContext, NeighboursActivity.class);
                             mContext.startActivity(intent);
                     }
                 }

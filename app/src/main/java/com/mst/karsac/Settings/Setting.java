@@ -61,7 +61,6 @@ public class Setting extends AppCompatActivity {
                 if (checkedId == R.id.setting_push)
                     SharedPreferencesHandler.setStringPreferences(getApplicationContext(), MODE_SELECTION, PUSH);
                 else if (checkedId == R.id.setting_pull) {
-                    SharedPreferencesHandler.setStringPreferences(getApplicationContext(), MODE_SELECTION, PULL);
                     if (SharedPreferencesHandler.getStringPreferences(getApplicationContext(),
                             TAG_KEYS).trim().length() == 0 &&
                             SharedPreferencesHandler.getStringPreferences(getApplicationContext(),
@@ -69,6 +68,9 @@ public class Setting extends AppCompatActivity {
                         Log.d(TAG, "Pull has not been set at all, so firing it");
                         Intent intent = new Intent(Setting.this, PullActivity.class);
                         startActivity(intent);
+                    }
+                    else{
+                        SharedPreferencesHandler.setStringPreferences(getApplicationContext(), MODE_SELECTION, PULL);
                     }
                 }
             }
