@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import android.widget.ListView;
 
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
@@ -97,6 +98,20 @@ public class DbHelper extends SQLiteOpenHelper {
 
     }
 
+    public List<String> getMsgUUID(){
+        List<String> uuidList = new ArrayList<>();
+        SQLiteDatabase db = this.getWritableDatabase();
+        String selectQuery = "SELECT * FROM " + Messages.MY_MESSAGE_TABLE_NAME;
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if(cursor.moveToFirst()){
+            do{
+                String uuid = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_UUID));
+                uuidList.add(uuid);
+            }while (cursor.moveToNext());
+        }
+        return uuidList;
+    }
+
     public List<RatingPOJ> getRatings(){
         List<RatingPOJ> ratingsList = new ArrayList<>();
 
@@ -165,6 +180,10 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(Messages.COLUMN_LAT, message.getLat());
         contentValues.put(Messages.COLUMN_LON, message.getLon());
         contentValues.put(Messages.COLUMN_TYPE, message.getType());
+        contentValues.put(Messages.COLUMN_UUID, message.getUuid());
+        contentValues.put(Messages.COLUMN_PROMISED, message.incentive_promised);
+        contentValues.put(Messages.COLUMN_PAID, message.incentive_paid);
+        contentValues.put(Messages.COLUMN_RECEIVED, message.incentive_received);
         id = db.insert(Messages.MY_MESSAGE_TABLE_NAME, null, contentValues);
         Log.d("ID", "ID" + id);
         return id;
@@ -190,9 +209,9 @@ public class DbHelper extends SQLiteOpenHelper {
                 double lon = cursor.getDouble(cursor.getColumnIndex(Messages.COLUMN_LON));
                 int type_msg = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_TYPE));
                 int id = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_ID));
-                float incetive_paid = cursor.getFloat(cursor.getColumnIndex(Messages.COLUMN_PAID));
-                float incetive_received = cursor.getFloat(cursor.getColumnIndex(Messages.COLUMN_RECEIVED));
-                float incetive_promised = cursor.getFloat(cursor.getColumnIndex(Messages.COLUMN_PROMISED));
+                int incetive_paid = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_PAID));
+                int incetive_received = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_RECEIVED));
+                int incetive_promised = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_PROMISED));
                 String uuid = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_UUID));
                 Messages messages = new Messages(imgPath, timestamp, tagsForCurrentImg, fileName,
                         format, sourceMac, destAddr, rating, type_msg, size, lat, lon, incetive_paid,
@@ -234,11 +253,26 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d("SIZE in DB", getMsgCount(msg.type) + " ");
     }
 
-    public int updateMsg(Messages msg) {
+    public int updateMsg(Messages message) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Messages.COLUMN_TAGS, msg.tagsForCurrentImg);
-        contentValues.put(Messages.COLUMN_DESTADDR, msg.destAddr);
-        return db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(msg.id)});
+        contentValues.put(Messages.COLUMN_IMG_PATH, message.getImgPath());
+        contentValues.put(Messages.COLUMN_TIMESTAMP, message.getTimestamp());
+        contentValues.put(Messages.COLUMN_TAGS, message.getTagsForCurrentImg());
+        contentValues.put(Messages.COLUMN_FILENAME, message.getFileName());
+        contentValues.put(Messages.COLUMN_FORMAT, message.getFormat());
+        contentValues.put(Messages.COLUMN_SRCMAC, message.getSourceMac());
+        contentValues.put(Messages.COLUMN_DESTADDR, message.getDestAddr());
+        contentValues.put(Messages.COLUMN_SIZE, message.getSize());
+        contentValues.put(Messages.COLUMN_RATING, message.getRating());
+        contentValues.put(Messages.COLUMN_LAT, message.getLat());
+        contentValues.put(Messages.COLUMN_LON, message.getLon());
+        contentValues.put(Messages.COLUMN_TYPE, message.getType());
+        contentValues.put(Messages.COLUMN_UUID, message.getUuid());
+        contentValues.put(Messages.COLUMN_PROMISED, message.incentive_promised);
+        contentValues.put(Messages.COLUMN_PAID, message.incentive_paid);
+        contentValues.put(Messages.COLUMN_RECEIVED, message.incentive_received);
+
+        return db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(message.id)});
     }
 }

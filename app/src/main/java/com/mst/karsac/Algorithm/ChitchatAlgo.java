@@ -1,5 +1,6 @@
 package com.mst.karsac.Algorithm;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
@@ -10,6 +11,7 @@ import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 
 import com.mst.karsac.Settings.Setting;
+import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.connections.ImageMessage;
 import com.mst.karsac.connections.MessageSerializer;
 import com.mst.karsac.connections.Mode;
@@ -24,8 +26,11 @@ import java.util.List;
 public class ChitchatAlgo {
 
     DbHelper dbHelper = GlobalApp.dbHelper;
+    public static final String TAG = ChitchatAlgo.class.getSimpleName();
+    int incentive_obtained;
 
     public List<Interest> decayingFunction(int timestamp) {
+
         List<Interest> self_interest;
         List<Interest> transient_interest;
         self_interest = dbHelper.getInterests(GlobalApp.SELF_INTEREST);
@@ -101,66 +106,139 @@ public class ChitchatAlgo {
 
     }
 
-    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac, Mode mode_type) {
-        List<ImageMessage> imageList = new ArrayList<>();
+    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac, Mode mode_type, List<String> msgUUIDList, int incentive, Context context) {
+        Log.d(TAG, "Incentive obtained:" + incentive);
+        incentive_obtained = incentive;
+        List<ImageMessage> imageList;
+        List<MessageClassification> messageClassifications = new ArrayList<>();
         List<Messages> my_self_Messages = dbHelper.getAllMessages(0);
         List<Messages> my_transient_messages = dbHelper.getAllMessages(1);
         my_self_Messages.addAll(my_transient_messages);
         for (Messages my_msg : my_self_Messages) {
-            boolean flag = checkValid(my_msg, recevied_mac);
-            if(flag == false) {
-                String[] msg_tags = my_msg.getTagsForCurrentImg().split(",");
-                float my_value = 0.0f;
-                float neighbor_value = 0.0f;
-                for (String tags : msg_tags) {
-                    tags = tags.trim();
-                    for (Interest interest : my_interest) {
-                        Log.d("Chitchat", tags + " - " + interest);
-                        if (tags.equals(interest.getInterest())) {
-                            my_value = my_value + interest.getValue();
-                        }
-                    }
-                    for (Interest obtained : obtained_interest) {
-                        if (tags.equals(obtained.getInterest())) {
-                            Log.d("Chitchat", tags + " - " + obtained);
-                            GlobalApp.dbHelper.updateMsg(my_msg);
-                            neighbor_value = neighbor_value + obtained.getValue();
-                        }
-                    }
+            boolean check_exists = false;
+            for (String receiver_UUID : msgUUIDList) {
+                if (my_msg.uuid.contains(receiver_UUID)) {
+                    check_exists = true;
+                    Log.d(TAG, "this message is already present with the sender:" + receiver_UUID + " Message UUID:" + my_msg.uuid);
+                    break;
                 }
-                Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
-                if (neighbor_value >= my_value && neighbor_value != 0.0f && my_value != 0.0f) {
-                    Log.d("Chitchat", mode_type.mode);
-                    if(mode_type.mode.contains(Setting.PULL) && mode_type.lat_lon != null &&
-                            mode_type.lat_lon.trim().length() > 0 && mode_type.lat_lon.contains(",")){
-                        my_msg.destAddr = recevied_mac + "|";
-                        String[] latlng = mode_type.lat_lon.split(",");
-                        double pull_lat = Double.parseDouble(latlng[0].trim());
-                        double pull_lon = Double.parseDouble(latlng[1].trim());
-                        float[] results = new float[1];
-                        Location.distanceBetween(pull_lat, pull_lon, my_msg.lat, my_msg.lon, results);
-                        float distance_in_miles = results[0];
-                        boolean is_Within_radius = distance_in_miles < (mode_type.radius * 1500);
-                        Log.d("chitchat", "Pull condition:" + is_Within_radius);
-                        if(is_Within_radius){
-                            Log.d("chitchat", "Pull condition statisfied, hence adding to the list");
-                            String msg_string = getBase64String(my_msg.imgPath);
-                            ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
-                            imageList.add(img_exchange);
+            }
+            if (check_exists == false) {
+                boolean flag = checkValid(my_msg, recevied_mac);
+                if (flag == false) {
+                    String[] msg_tags = my_msg.getTagsForCurrentImg().split(",");
+                    float my_value = 0.0f;
+                    float neighbor_value = 0.0f;
+                    for (String tags : msg_tags) {
+                        tags = tags.trim();
+                        for (Interest interest : my_interest) {
+                            Log.d("Chitchat", tags + " - " + interest);
+                            if (tags.equals(interest.getInterest())) {
+                                my_value = my_value + interest.getValue();
+                            }
+                        }
+                        for (Interest obtained : obtained_interest) {
+                            if (tags.equals(obtained.getInterest())) {
+                                if (obtained.getType() == 0)
+                                    flag = true;
+                                Log.d("Chitchat", tags + " - " + obtained);
+                                neighbor_value = neighbor_value + obtained.getValue();
+                            }
                         }
                     }
-                    else{
-                        my_msg.destAddr = recevied_mac + "|";
-                        String msg_string = getBase64String(my_msg.imgPath);
-                        ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
-                        imageList.add(img_exchange);
+                    Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
+                    if (neighbor_value >= my_value && neighbor_value != 0.0f && my_value != 0.0f) {
+                        Log.d("Chitchat", mode_type.mode);
+                        if (mode_type.mode.contains(Setting.PULL) && mode_type.lat_lon != null &&
+                                mode_type.lat_lon.trim().length() > 0 && mode_type.lat_lon.contains(",")) {
+                            String[] latlng = mode_type.lat_lon.split(",");
+                            double pull_lat = Double.parseDouble(latlng[0].trim());
+                            double pull_lon = Double.parseDouble(latlng[1].trim());
+                            float[] results = new float[1];
+                            Location.distanceBetween(pull_lat, pull_lon, my_msg.lat, my_msg.lon, results);
+                            float distance_in_miles = results[0];
+                            boolean is_Within_radius = distance_in_miles < (mode_type.radius * 1500);
+                            Log.d("chitchat", "Pull condition:" + is_Within_radius);
+                            if (is_Within_radius) {
+                                Log.d("chitchat", "Pull condition statisfied, hence adding to the list");
+                                MessageClassification messageClassification = new MessageClassification(my_msg, flag);
+                                messageClassifications.add(messageClassification);
+//                                my_msg.destAddr = recevied_mac + "|";
+//                                GlobalApp.dbHelper.updateMsg(my_msg);
+//                                String msg_string = getBase64String(my_msg.imgPath);
+//                                ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+//                                imageList.add(img_exchange);
+                            }
+                        } else {
+                            MessageClassification messageClassification = new MessageClassification(my_msg, flag);
+                            messageClassifications.add(messageClassification);
+//                            my_msg.destAddr = recevied_mac + "|";
+//                            GlobalApp.dbHelper.updateMsg(my_msg);
+//                            String msg_string = getBase64String(my_msg.imgPath);
+//                            ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+//                            imageList.add(img_exchange);
+                        }
                     }
                 }
             }
         }
-        MessageSerializer final_messages = new MessageSerializer(MessageSerializer.MESSAGE_MODE, imageList);
+
+        imageList = selectMessagesToSend(messageClassifications, recevied_mac, context);
+        Log.d(TAG, "Size of messages to be sent:" + imageList.size());
+        MessageSerializer final_messages = new MessageSerializer(MessageSerializer.MESSAGE_MODE, imageList, incentive_obtained);
         return final_messages;
 
+    }
+
+    private List<ImageMessage> selectMessagesToSend(List<MessageClassification> messageClassifications, String recevied_mac, Context context) {
+        List<ImageMessage> imageList = new ArrayList<>();
+        for (MessageClassification messageClassification : messageClassifications) {
+            int temp_incen = incentive_obtained;
+            if (messageClassification.type == true) {
+                Messages my_msg = messageClassification.messages;
+                if (my_msg.incentive_promised != 0) {
+                    incentive_obtained = incentive_obtained - my_msg.incentive_promised;
+                }
+                else
+                    incentive_obtained = incentive_obtained - 30;
+                if (incentive_obtained > 0) {
+                    Log.d(TAG, "Calculating incentive for direct case");
+                    handleMyIncentive(temp_incen - incentive_obtained, context);
+                    my_msg.destAddr = recevied_mac + "|";
+                    my_msg.incentive_received = my_msg.incentive_received + temp_incen - incentive_obtained;
+                    GlobalApp.dbHelper.updateMsg(my_msg);
+                    my_msg.incentive_received = 0;
+                    my_msg.incentive_paid = temp_incen - incentive_obtained;
+                    String msg_string = getBase64String(my_msg.imgPath);
+                    ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                    imageList.add(img_exchange);
+                }
+                else
+                    incentive_obtained = temp_incen;
+
+            }
+        }
+        for (MessageClassification messageClassification : messageClassifications) {
+            if (messageClassification.type == false && messageClassification.messages.incentive_promised == 0) {
+                Log.d(TAG, "Calculating incentive for indirect case");
+                Messages my_msg = messageClassification.messages;
+                my_msg.destAddr = recevied_mac + "|";
+                GlobalApp.dbHelper.updateMsg(my_msg);
+                my_msg.incentive_promised = 25;
+                String msg_string = getBase64String(my_msg.imgPath);
+                ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                imageList.add(img_exchange);
+            }
+        }
+        return imageList;
+
+    }
+
+    private void handleMyIncentive(int incentive_add, Context context) {
+        Log.d(TAG, "handleMyIncentive");
+        int present_incentive = SharedPreferencesHandler.getIncentive(context, Setting.INCENTIVE);
+        present_incentive = present_incentive + incentive_add;
+        SharedPreferencesHandler.setIntPreference(context, Setting.INCENTIVE, present_incentive);
     }
 
     private String getBase64String(String filePath) {
@@ -192,11 +270,11 @@ public class ChitchatAlgo {
             if (msg.destAddr != null && msg.destAddr.length() > 0) {
                 String[] intermediaries = msg.destAddr.split("\\|");
                 Log.d("chitchat", "size:" + intermediaries.length);
-                if(intermediaries != null && intermediaries.length > 0){
+                if (intermediaries != null && intermediaries.length > 0) {
                     boolean flag1 = false;
-                    for(String inter_mac : intermediaries){
+                    for (String inter_mac : intermediaries) {
                         Log.d("ChitchatAlgo", inter_mac);
-                        if(inter_mac.equals(received_mac)){
+                        if (inter_mac.equals(received_mac)) {
                             flag1 = true;
                             break;
                         }

@@ -44,15 +44,15 @@ public class Messages implements Serializable{
     public long size;
     public double lat;
     public double lon;
-    public float incentive_promised;
-    public float incentive_received;
-    public float incentive_paid;
+    public int incentive_promised;
+    public int incentive_received;
+    public int incentive_paid;
     public String uuid;
 
     public Messages(String imgPath, String timestamp, String tagsForCurrentImg, String fileName,
                     String format, String sourceMac, String destAddr, int rating, int type,
-                    long size, double lat, double lon, float incentive_paid, float incentive_promised,
-                    float incentive_received, String uuid) {
+                    long size, double lat, double lon, int incentive_paid, int incentive_promised,
+                    int incentive_received, String uuid) {
         this.imgPath = imgPath;
         this.timestamp = timestamp;
         this.tagsForCurrentImg = tagsForCurrentImg;
@@ -77,7 +77,7 @@ public class Messages implements Serializable{
             + COLUMN_FILENAME + " TEXT," + COLUMN_FORMAT + " TEXT," + COLUMN_SRCMAC + " TEXT,"
             + COLUMN_DESTADDR + " TEXT," +  COLUMN_SIZE + " INTEGER," + COLUMN_RATING + " INTEGER,"
             + COLUMN_LAT + " REAL," + COLUMN_LON + " REAL," + COLUMN_TYPE + " INTEGER, "
-            + COLUMN_PAID + " REAL," + COLUMN_RECEIVED + " REAL," + COLUMN_PROMISED + " REAL)";
+            + COLUMN_PAID + " INTEGER," + COLUMN_RECEIVED + " INTEGER," + COLUMN_PROMISED + " INTEGER)";
 
 
     public int getType() {

@@ -124,7 +124,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
 
     private void handleResult(Uri uri, File image) {
-        String img_path = null;
+        String img_path;
         if (image == null)
             img_path = getRealPathFromURI(this, uri);
         else
@@ -150,7 +150,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         Log.d("timestamp:", timestamp);
         Messages messages = new Messages(uri.toString(), timestamp, tagsForCurrentImg,
                 fileName, format, sourceMac, destAddr, rating, 0, size, lat, lon,
-                0.0f, 0.0f, 0.0f, uuid);
+                0, 0, 0, uuid);
         messages.imgPath = img_path;
         Log.d("FilePath", messages.imgPath);
         messageDbHelper.insertImageRecord(messages);

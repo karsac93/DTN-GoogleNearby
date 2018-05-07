@@ -58,14 +58,14 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     public static final String OWNER = "owner";
     public static final String CLIENT = "client";
     static MessageSerializer my_messageSerializer_temp = null;
-    public static final int SERVICE_BROADCASTING_INTERVAL = 60000;
-    public static final int SERVICE_DISCOVERING_INTERVAL = 60000;
+    public static final int SERVICE_BROADCASTING_INTERVAL = 40000;
+    public static final int SERVICE_DISCOVERING_INTERVAL = 40000;
     WifiP2pServiceRequest wifiP2pServiceRequest;
     WifiP2pDevice my_device;
-    public static int num_failures = 0;
     ArrayList<String> wifiaddresses = new ArrayList<>();
     public static boolean wifip2p_enabled = false;
     public static boolean check_connected = false;
+    int error_count = 0;
 
 
     @Override
@@ -86,6 +86,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         this.registerReceiver(receiver, intentFilter);
         SERVICE_INSTANCE = SERVICE_INSTANCE + "|" + GlobalApp.source_mac;
         wifiP2pServiceRequest = WifiP2pDnsSdServiceRequest.newInstance();
+        clearHandler.postDelayed(clearRunnable, 300000);
 
     }
 
@@ -100,6 +101,15 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
             startServiceDiscovery();
         }
     }
+
+    Handler clearHandler = new Handler();
+    Runnable clearRunnable = new Runnable() {
+        @Override
+        public void run() {
+            wifiaddresses.clear();
+            clearHandler.postDelayed(clearRunnable, 300000);
+        }
+    };
 
     private void startServiceDiscovery() {
         manager.removeServiceRequest(channel, wifiP2pServiceRequest, new WifiP2pManager.ActionListener() {
@@ -138,6 +148,13 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                                         mServiceDiscoveringHandler.postDelayed(
                                                 mServiceDiscoveringRunnable,
                                                 SERVICE_DISCOVERING_INTERVAL);
+                                        error_count++;
+                                        if(error_count >= 10) {
+                                            error_count = 0;
+                                            mServiceDiscoveringHandler.removeCallbacks(mServiceBroadcastingRunnable);
+                                            mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
+                                            notifyCompleteClient();
+                                        }
                                     }
                                 });
                             }
@@ -187,7 +204,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                 if (instanceName.contains(INSTANCE)) {
                     Log.d(TAG, instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()));
                     String receivedMac = instanceName.substring(instanceName.indexOf("|") + 1, instanceName.length()).replace(":", "");
-                    String deviceMac = GlobalApp.source_mac.replace(":", "");
+                    String deviceMac = GlobalApp.source_mac.replace("-", "");
                     boolean flag = false;
                     for (int i = 0; i < receivedMac.length(); i++) {
                         int own = (int) deviceMac.charAt(i);
@@ -290,7 +307,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                     Toast.makeText(getApplicationContext(), "Connected to" + wifiP2pDevice.deviceName, Toast.LENGTH_SHORT).show();
                     wifiaddresses.add(address);
                     check_connected = false;
-                    handlerConnection.postDelayed(runnableConnectionCheck, 20000);
+                    handlerConnection.postDelayed(runnableConnectionCheck, 30000);
 
                 }
 
@@ -350,8 +367,11 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
         int init_time = SharedPreferencesHandler.getIntPreferences(getApplicationContext(), GlobalApp.TIMESTAMP);
         SharedPreferencesHandler.setIntPreference(getApplicationContext(), GlobalApp.TIMESTAMP, init_time + 1);
         List<Interest> my_interests = new ChitchatAlgo().decayingFunction(SharedPreferencesHandler.getIntPreferences(this, GlobalApp.TIMESTAMP));
+        List<String> uuidList = GlobalApp.dbHelper.getMsgUUID();
         Log.d(TAG, "Size of decayed interest:---" + my_interests.size());
         my_messageSerializer = new MessageSerializer(my_interests, MessageSerializer.INTEREST_MODE);
+        my_messageSerializer.msgUUIDList = uuidList;
+        my_messageSerializer.incentive = SharedPreferencesHandler.getIncentive(this, Setting.INCENTIVE);
         Log.d(TAG, "Size of decayed interest:@@@" + my_messageSerializer.my_interests.size());
         List<RatingPOJ> ratingPOJS = GlobalApp.dbHelper.getRatings();
         my_messageSerializer.ratingPOJList = ratingPOJS;

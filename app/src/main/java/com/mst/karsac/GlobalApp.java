@@ -12,6 +12,8 @@ import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.connections.BackgroundService;
 import com.mst.karsac.servicedns.WiFiDirectBroadcastReceiver;
 
+import java.util.UUID;
+
 /**
  * Created by ks2ht on 3/25/2018.
  */
@@ -34,7 +36,7 @@ public class GlobalApp extends Application {
         wifiManager.setWifiEnabled(false);
         wifiManager.setWifiEnabled(true);
         WifiInfo info = wifiManager.getConnectionInfo();
-        source_mac = info.getMacAddress();
+        source_mac = UUID.nameUUIDFromBytes(info.getMacAddress().toString().replace(":", "").getBytes()).toString();
         Log.d("GLOBAL", source_mac);
         startService(new Intent(this, BackgroundService.class));
     }

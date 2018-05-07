@@ -19,6 +19,8 @@ public class MessageSerializer implements Serializable {
     String my_macaddress;
     Mode mode_type;
     List<RatingPOJ> ratingPOJList;
+    List<String> msgUUIDList;
+    int incentive;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
         this.my_interests = my_interests;
@@ -26,7 +28,8 @@ public class MessageSerializer implements Serializable {
         this.my_macaddress = GlobalApp.source_mac;
     }
 
-    public MessageSerializer(String mode, List<ImageMessage> my_mesages) {
+    public MessageSerializer(String mode, List<ImageMessage> my_mesages, int incentive) {
+        this.incentive = incentive;
         this.mode = mode;
         this.my_mesages = my_mesages;
     }

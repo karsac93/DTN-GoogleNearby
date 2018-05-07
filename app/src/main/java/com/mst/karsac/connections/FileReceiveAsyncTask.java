@@ -8,6 +8,8 @@ import android.util.Log;
 
 import com.mst.karsac.Algorithm.ChitchatAlgo;
 import com.mst.karsac.GlobalApp;
+import com.mst.karsac.Settings.Setting;
+import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.messages.Messages;
 import com.mst.karsac.ratings.RatingPOJ;
 
@@ -60,7 +62,7 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                 Log.d(TAG, "Checking the mode type actually:" + obtained_msg.mode_type.mode);
                 //Log.d(TAG, incoming_msg.my_interests.get(0).getInterest());
                 if (role.contains(BackgroundService.OWNER)) {
-                    Log.d(TAG, "Check obtained interests:" + messageSerializer.my_interests.get(0).getInterest());
+                    //Log.d(TAG, "Check obtained interests:" + messageSerializer.my_interests.get(0).getInterest());
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, messageSerializer);
                     myListener.setMessageSerializer(messageSerializer);
                     fileTransferAsyncTask.execute();
@@ -69,7 +71,9 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                     return incoming_msg.mode;
                 }
                 if (role.contains(BackgroundService.CLIENT)) {
-                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(incoming_msg.my_interests, messageSerializer.my_interests, incoming_msg.my_macaddress, incoming_msg.mode_type);
+                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol
+                            (incoming_msg.my_interests, messageSerializer.my_interests, incoming_msg.my_macaddress,
+                                    incoming_msg.mode_type, incoming_msg.msgUUIDList, incoming_msg.incentive, context);
                     BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, message_transfer);
                     fileTransferAsyncTask.execute();
                     ois.close();
@@ -78,11 +82,15 @@ public class FileReceiveAsyncTask extends AsyncTask<Void, Void, String> {
                 }
             } else if (incoming_msg.mode.contains(MessageSerializer.MESSAGE_MODE)) {
                 List<ImageMessage> received_msgs = incoming_msg.my_mesages;
+                SharedPreferencesHandler.setIntPreference(context, Setting.INCENTIVE, incoming_msg.incentive);
                 UpdateDbandSetImage(received_msgs);
                 if (role.contains(BackgroundService.OWNER)) {
                     MessageSerializer my_serialized_interest = myListener.getTsInterests();
-                    MessageSerializer message_transfer = new ChitchatAlgo().RoutingProtocol(messageSerializer.my_interests, my_serialized_interest.my_interests, messageSerializer.my_macaddress, messageSerializer.mode_type);
-                    BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new BackgroundService.FileTransferAsyncTask(context, wifiClientIp, message_transfer);
+                    MessageSerializer message_transfer = new ChitchatAlgo().
+                            RoutingProtocol(messageSerializer.my_interests, my_serialized_interest.my_interests, messageSerializer.my_macaddress,
+                                    messageSerializer.mode_type, messageSerializer.msgUUIDList, messageSerializer.incentive, context);
+                    BackgroundService.FileTransferAsyncTask fileTransferAsyncTask = new
+                            BackgroundService.FileTransferAsyncTask(context, wifiClientIp, message_transfer);
                     fileTransferAsyncTask.execute();
                 }
                 ois.close();

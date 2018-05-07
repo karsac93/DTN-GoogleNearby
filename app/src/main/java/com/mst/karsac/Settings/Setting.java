@@ -10,12 +10,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 
 public class Setting extends AppCompatActivity {
 
+    public static final String INCENTIVE = "incentive";
     public static final String TAG = "SettingActivity";
     public static final String MODE_SELECTION = "return_mode";
     public static final String PUSH = "push";
@@ -27,6 +29,7 @@ public class Setting extends AppCompatActivity {
 
     private RadioGroup radioGroup;
     private RadioButton pushBtn, pullBtn;
+    TextView int_incentive;
 
 
     @Override
@@ -48,6 +51,9 @@ public class Setting extends AppCompatActivity {
         radioGroup = findViewById(R.id.radio_group);
         pushBtn = findViewById(R.id.setting_push);
         pullBtn = findViewById(R.id.setting_pull);
+        int_incentive = findViewById(R.id.int_incentive);
+
+        int_incentive.setText(String.valueOf(SharedPreferencesHandler.getIncentive(this, INCENTIVE)));
 
         String mode = SharedPreferencesHandler.getStringPreferences(this, MODE_SELECTION);
         if (mode.equals(PUSH))

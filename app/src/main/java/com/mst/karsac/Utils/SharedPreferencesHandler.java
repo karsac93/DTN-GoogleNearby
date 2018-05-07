@@ -34,4 +34,8 @@ public class SharedPreferencesHandler {
         return getSharedPreferences(context).getInt(key, 1);
     }
 
+    public static int getIncentive(Context context, String key) {
+        return getSharedPreferences(context).getInt(key, 300);
+    }
+
 }
