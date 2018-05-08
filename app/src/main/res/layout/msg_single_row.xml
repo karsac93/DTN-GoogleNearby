@@ -52,7 +52,8 @@
             android:layout_alignParentBottom="true"
             android:layout_toRightOf="@id/thumbnail"
             android:textColor="@color/colorAccent"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone"/>
 
             </RelativeLayout>
 

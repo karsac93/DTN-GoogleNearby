@@ -189,6 +189,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return id;
     }
 
+
     public List<Messages> getAllMessages(int type) {
         List<Messages> messagesList = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + Messages.MY_MESSAGE_TABLE_NAME + " WHERE type=" + type;
@@ -216,7 +217,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 Messages messages = new Messages(imgPath, timestamp, tagsForCurrentImg, fileName,
                         format, sourceMac, destAddr, rating, type_msg, size, lat, lon, incetive_paid,
                         incetive_promised, incetive_received, uuid);
-                messages.id = id;
+                messages.id = String.valueOf(id);
                 messagesList.add(messages);
             } while (cursor.moveToNext());
         }
@@ -273,6 +274,7 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(Messages.COLUMN_PAID, message.incentive_paid);
         contentValues.put(Messages.COLUMN_RECEIVED, message.incentive_received);
 
-        return db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(message.id)});
+        int id = db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(message.id)});
+        return id;
     }
 }

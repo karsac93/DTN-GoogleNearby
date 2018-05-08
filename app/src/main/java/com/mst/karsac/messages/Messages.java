@@ -40,7 +40,7 @@ public class Messages implements Serializable{
     public String destAddr;
     public int rating;
     public int type;
-    public int id;
+    public String id;
     public long size;
     public double lat;
     public double lon;
@@ -84,7 +84,7 @@ public class Messages implements Serializable{
         return type;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 

@@ -1,5 +1,6 @@
 package com.mst.karsac.messages;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 
 import java.io.File;
@@ -29,11 +31,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.LocationHandler;
+
+import clarifai2.api.ClarifaiBuilder;
+import clarifai2.api.ClarifaiClient;
+import clarifai2.api.request.model.PredictRequest;
+import clarifai2.dto.input.ClarifaiImage;
+import clarifai2.dto.input.ClarifaiInput;
+import clarifai2.dto.model.Model;
+import clarifai2.dto.model.output.ClarifaiOutput;
+import clarifai2.dto.prediction.Concept;
+import okhttp3.OkHttpClient;
 
 public class InboxActivity extends AppCompatActivity implements MyListener {
 
@@ -153,9 +166,68 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                 0, 0, 0, uuid);
         messages.imgPath = img_path;
         Log.d("FilePath", messages.imgPath);
-        messageDbHelper.insertImageRecord(messages);
+        long id = messageDbHelper.insertImageRecord(messages);
+        messages.id = String.valueOf(id);
         notifyChange(type);
+        myRunnable runnable = new myRunnable(messages, id, this);
+        new Thread(runnable).start();
+
     }
+
+    class myRunnable implements Runnable{
+
+        Messages msg;
+        long id;
+        Activity activity;
+
+        public myRunnable(Messages msg, long id, Activity activity) {
+            this.msg = msg;
+            this.id = id;
+            this.activity = activity;
+        }
+
+        @Override
+        public void run() {
+            try {
+                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("bdcea2fc120e4f81882e9a8f434f6f37")
+                        .client(new OkHttpClient()).buildSync();
+                Log.d("hello", "Inside run");
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(InboxActivity.this, "Please wait, tags are being added!", Toast.LENGTH_SHORT).show();
+                        msgRecyclerview.setClickable(false);
+                    }
+                });
+                Model<Concept> generalModel = clarifaiClient.getDefaultModels().generalModel();
+                PredictRequest<Concept> request = generalModel.predict().withInputs(ClarifaiInput.forImage(ClarifaiImage.of(new File(msg.imgPath))));
+                List<ClarifaiOutput<Concept>> result = request.executeSync().get();
+                Log.d("Inbox///////", result.get(0).data().get(0).name());
+                if (result.get(0).data().size() > 0) {
+                    String tags = result.get(0).data().get(0).name() + ", " + result.get(0).data().get(1).name();
+                    msg.tagsForCurrentImg = tags;
+                    GlobalApp.dbHelper.updateMsg(msg);
+                    activity.runOnUiThread(new Runnable() {
+                        public void run() {
+                            notifyChange(0);
+                            Toast.makeText(InboxActivity.this, "Tags added", Toast.LENGTH_SHORT).show();
+                            msgRecyclerview.setClickable(true);
+                        }
+                    });
+                    DbHelper dbHelper = GlobalApp.dbHelper;
+                    msg.tagsForCurrentImg = tags;
+                    String[] interests = tags.split(",");
+                    for (String intrst : interests)
+                        dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                run();
+            }
+        }
+    }
+
 
     public void notifyChange(int type) {
         messagesList.clear();
