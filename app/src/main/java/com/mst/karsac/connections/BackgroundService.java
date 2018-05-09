@@ -157,7 +157,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                                             error_count = 0;
                                             mServiceDiscoveringHandler.removeCallbacks(mServiceBroadcastingRunnable);
                                             mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
-                                            notifyCompleteClient();
+                                            threestepstodiscovery();
                                         }
                                     }
                                 });
@@ -168,10 +168,11 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
                     @Override
                     public void onFailure(int i) {
                         Log.d(TAG, "addServiceRequest Failure:" + i);
-                        mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
-                        mServiceDiscoveringHandler.postDelayed(
-                                mServiceDiscoveringRunnable,
-                                SERVICE_DISCOVERING_INTERVAL);
+//                        mServiceDiscoveringHandler.removeCallbacks(mServiceDiscoveringRunnable);
+//                        mServiceDiscoveringHandler.postDelayed(
+//                                mServiceDiscoveringRunnable,
+//                                SERVICE_DISCOVERING_INTERVAL);
+                        threestepstodiscovery();
                     }
                 });
 
@@ -180,9 +181,10 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
             @Override
             public void onFailure(int i) {
                 Log.d(TAG, "removeServiceRequest Failure:" + i);
-                mServiceDiscoveringHandler.postDelayed(
-                        mServiceDiscoveringRunnable,
-                        SERVICE_DISCOVERING_INTERVAL);
+//                mServiceDiscoveringHandler.postDelayed(
+//                        mServiceDiscoveringRunnable,
+//                        SERVICE_DISCOVERING_INTERVAL);
+                threestepstodiscovery();
             }
         });
     }
@@ -287,7 +289,7 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
                     @Override
                     public void onFailure(int error) {
-                        Log.d(TAG, "Discover Peers Failure!");
+                        Log.d(TAG, "Discover Peers Failure!  " + error);
                         check_peercount++;
                         if(check_peercount>=10){
                             mServiceDiscoveringHandler.removeCallbacks(mServiceBroadcastingRunnable);
@@ -453,26 +455,30 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
     public void notifyComplete() {
         disconnect();
         deletePersistentGroups();
-        manager.clearLocalServices(channel, null);
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        wifiManager.setWifiEnabled(false);
-        my_device = null;
-        wifiManager.setWifiEnabled(true);
-        onOff = true;
-
+//        manager.clearLocalServices(channel, null);
+//        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//        wifiManager.setWifiEnabled(false);
+//        my_device = null;
+//        wifiManager.setWifiEnabled(true);
+//        onOff = true;
+//        mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+//        mServiceDiscoveringHandler.postDelayed(mServiceDiscoveringRunnable, SERVICE_BROADCASTING_INTERVAL);
+        threestepstodiscovery();
     }
 
     @Override
     public void notifyCompleteClient() {
         disconnect();
         deletePersistentGroups();
-        manager.clearLocalServices(channel, null);
-        manager.clearLocalServices(channel, null);
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        wifiManager.setWifiEnabled(false);
-        my_device = null;
-        wifiManager.setWifiEnabled(true);
-        onOff = true;
+//        manager.clearLocalServices(channel, null);
+//        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//        wifiManager.setWifiEnabled(false);
+//        my_device = null;
+//        wifiManager.setWifiEnabled(true);
+//        onOff = true;
+//        mServiceBroadcastingHandler.postDelayed(mServiceBroadcastingRunnable, SERVICE_BROADCASTING_INTERVAL);
+//        mServiceDiscoveringHandler.postDelayed(mServiceDiscoveringRunnable, SERVICE_BROADCASTING_INTERVAL);
+        threestepstodiscovery();
     }
 
     public static void disconnect() {
@@ -519,27 +525,27 @@ public class BackgroundService extends Service implements WifiP2pManager.Connect
 
     @Override
     public void peersHaveChanged(WifiP2pDevice device) {
-        if (my_device == null) {
+//        if (my_device == null) {
             my_device = device;
-            if (wifip2p_enabled == true || onOff == true) {
-                wifip2p_enabled = false;
-                onOff = false;
-                Log.d(TAG, "WIfi p2p changed call back");
-                threestepstodiscovery();
-            }
+//            if (wifip2p_enabled == true || onOff == true) {
+//            if (wifip2p_enabled == true) {
+//                wifip2p_enabled = false;
+//                onOff = false;
+//                Log.d(TAG, "WIfi p2p changed call back");
+//                threestepstodiscovery();
+//            }
         }
-        my_device = device;
-    }
+//    }
 
     @Override
     public void checkP2pEnabled(boolean flag) {
-        if (wifip2p_enabled == false) {
-            if (my_device != null) {
-                Log.d(TAG, "WIfi p2p enabled callback");
+//        if (wifip2p_enabled == false) {
+//            if (my_device != null) {
+//                Log.d(TAG, "WIfi p2p enabled callback");
                 threestepstodiscovery();
-            }
-        }
-        wifip2p_enabled = true;
+//            }
+//        }
+//        wifip2p_enabled = true;
 
     }
 

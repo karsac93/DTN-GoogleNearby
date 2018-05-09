@@ -121,18 +121,20 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         if (requestCode == CHOOSE_FILE_GAL_RESULT_CODE) {
-            Uri uri = data.getData();
-            if (uri != null) {
-                Log.d("INBOX", "Yeah made it!");
-                handleResult(uri, image);
+            if (resultCode != RESULT_CANCELED && data.getData() != null) {
+                Uri uri = data.getData();
+                if (uri != null) {
+                    Log.d("INBOX", "Yeah made it!");
+                    handleResult(uri, image);
+                }
             }
         }
-        if (requestCode == CHOOSE_FILE_CAM_RESULT_CODE) {
+        if (resultCode != RESULT_CANCELED && requestCode == CHOOSE_FILE_CAM_RESULT_CODE) {
             Log.d("INBOX", "Yeah made it!");
             handleResult(uriSavedImage, image);
         }
+
     }
 
 
@@ -174,7 +176,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
     }
 
-    class myRunnable implements Runnable{
+    class myRunnable implements Runnable {
 
         Messages msg;
         long id;
@@ -219,9 +221,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                     for (String intrst : interests)
                         dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
                 }
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
                 run();
             }
@@ -272,7 +272,6 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         });
         return true;
     }
-
 
 
     @Override

@@ -54,7 +54,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:textColor="@color/colorPrimary"
-            android:textSize="12dp" />
+            android:textSize="12dp"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/interestval_tv"

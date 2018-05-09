@@ -69,7 +69,7 @@ public class DbHelper extends SQLiteOpenHelper {
         values.put(Interest.TYPE, type);
         values.put(Interest.COLUMN_TIMESTAMP, SharedPreferencesHandler.getIntPreferences(context, GlobalApp.TIMESTAMP));
         String selectQuery = "SELECT * FROM " + Interest.TABLE_NAME_INTEREST + " WHERE " +
-                Interest.COLUMN_INTEREST + "='" + interest + "'";
+                Interest.COLUMN_INTEREST + "='" + interest + "'" ;
         Cursor cursor = db.rawQuery(selectQuery, null);
         count = cursor.getCount();
         if (count == 0)
@@ -244,6 +244,12 @@ public class DbHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(countQuery, null);
         count = cursor.getCount();
         return count;
+    }
+
+    public void truncate(String tableName){
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        String selectQuery = "DELETE FROM " + tableName;
+        sqLiteDatabase.execSQL(selectQuery);
     }
 
     public void deleteMsg(Messages msg) {

@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -25,8 +26,8 @@
         <meta-data
             android:name="com.google.android.nearby.messages.API_KEY"
             android:value="AIzaSyC2M30I19-wIwc-FZywllCh6L67DmIbDyM" />
-
-        <meta-data android:name="com.google.android.maps.v2.API_KEY"
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyC2M30I19-wIwc-FZywllCh6L67DmIbDyM" />
 
         <activity
@@ -73,7 +74,12 @@
             android:name=".Settings.PullActivity"
             android:label="@string/title_activity_pull" />
         <activity android:name=".ratings.RatingsActivity" />
-        <activity android:name=".Neighbours.NeighboursActivity"></activity>
+        <activity android:name=".Neighbours.NeighboursActivity" />
+
+        <service
+            android:name=".NearbySupports.NearbyService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

@@ -8,12 +8,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
+import com.mst.karsac.interest.Interest;
+import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.RatingPOJ;
 
 public class Setting extends AppCompatActivity {
 
@@ -30,6 +36,7 @@ public class Setting extends AppCompatActivity {
     private RadioGroup radioGroup;
     private RadioButton pushBtn, pullBtn;
     TextView int_incentive;
+    Button resetBtn;
 
 
     @Override
@@ -52,6 +59,21 @@ public class Setting extends AppCompatActivity {
         pushBtn = findViewById(R.id.setting_push);
         pullBtn = findViewById(R.id.setting_pull);
         int_incentive = findViewById(R.id.int_incentive);
+        resetBtn = findViewById(R.id.reset_btn);
+
+        resetBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GlobalApp.dbHelper.truncate(Messages.MY_MESSAGE_TABLE_NAME);
+                GlobalApp.dbHelper.truncate(Interest.TABLE_NAME_INTEREST);
+                GlobalApp.dbHelper.truncate(RatingPOJ.RATINGS_TABLENAME);
+                SharedPreferencesHandler.setStringPreferences(getApplicationContext(), Setting.MODE_SELECTION, Setting.PUSH);
+                SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.INCENTIVE, 300);
+                SharedPreferencesHandler.setIntPreference(getApplicationContext(), GlobalApp.TIMESTAMP, 0);
+                Toast.makeText(getApplicationContext(), "Reset completed!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
         int_incentive.setText(String.valueOf(SharedPreferencesHandler.getIncentive(this, INCENTIVE)));
 

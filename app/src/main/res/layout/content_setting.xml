@@ -65,9 +65,26 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:padding="@dimen/settings_padding"
-                android:textSize="20dp" />
+                android:textSize="20dp"
+                android:layout_marginBottom="10dp"/>
 
         </RelativeLayout>
+
+        <Button
+            android:id="@+id/reset_btn"
+            android:layout_marginTop="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:background="@color/colorPrimary"
+            android:foreground="?attr/selectableItemBackground"
+            android:textColor="@android:color/white"
+            android:text="Reset all"
+            android:textSize="20sp"
+            android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

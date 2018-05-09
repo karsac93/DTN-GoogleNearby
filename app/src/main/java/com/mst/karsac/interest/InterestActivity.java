@@ -99,6 +99,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
                             String[] interests = interest.split(",");
                             for (String intrst : interests)
                                 dbHelper.insertInterest(intrst.trim().toLowerCase(), 0, 0.5f);
+                            Log.d("InterestActivity", "Message added");
                             notifyChange(0);
                         }
                     }
@@ -117,6 +118,7 @@ public class InterestActivity extends AppCompatActivity implements RecyclerItemT
 
     public void notifyChange(int type) {
         interestList.clear();
+        Log.d("InboxActivity", dbHelper.getInterests(type).size() + " " + "Type:" + type);
         interestList.addAll(dbHelper.getInterests(type));
         interestAdapter.notifyDataSetChanged();
     }

@@ -13,14 +13,14 @@ public class MessageSerializer implements Serializable {
     public static final String MESSAGE_MODE = "message";
     public static final String RECEIVED_MODE = "received";
 
-    List<Interest> my_interests;
-    List<ImageMessage> my_mesages;
-    String mode;
-    String my_macaddress;
-    Mode mode_type;
-    List<RatingPOJ> ratingPOJList;
-    List<String> msgUUIDList;
-    int incentive;
+    public List<Interest> my_interests;
+    public List<ImageMessage> my_mesages;
+    public String mode;
+    public String my_macaddress;
+    public Mode mode_type;
+    public List<RatingPOJ> ratingPOJList;
+    public List<String> msgUUIDList;
+    public int incentive;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
         this.my_interests = my_interests;

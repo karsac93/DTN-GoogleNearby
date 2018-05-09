@@ -6,8 +6,8 @@ import java.io.Serializable;
 import java.util.List;
 
 public class ImageMessage implements Serializable{
-    Messages messages;
-    String img_path;
+    public Messages messages;
+    public String img_path;
 
     public ImageMessage(Messages messages, String img_path) {
         this.messages = messages;

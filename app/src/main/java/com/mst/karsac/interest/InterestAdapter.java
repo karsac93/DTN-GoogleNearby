@@ -39,7 +39,7 @@ public class InterestAdapter extends RecyclerView.Adapter<InterestAdapter.Intere
         Interest curInterest = interestList.get(position);
         holder.interest.setText(curInterest.getInterest());
         holder.timestamp.setText("Timestamp :" + curInterest.getTimestamp());
-        holder.value.setText("Value :" + String.valueOf(curInterest.getValue()));
+        holder.value.setText("Interest Value :" + String.valueOf(curInterest.getValue()));
     }
 
     @Override

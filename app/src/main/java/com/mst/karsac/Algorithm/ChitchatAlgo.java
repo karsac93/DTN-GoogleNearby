@@ -238,6 +238,7 @@ public class ChitchatAlgo {
         Log.d(TAG, "handleMyIncentive");
         int present_incentive = SharedPreferencesHandler.getIncentive(context, Setting.INCENTIVE);
         present_incentive = present_incentive + incentive_add;
+        Log.d(TAG, "incentive being added:" + present_incentive);
         SharedPreferencesHandler.setIntPreference(context, Setting.INCENTIVE, present_incentive);
     }
 

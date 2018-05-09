@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        startService(new Intent(this, BackgroundService.class));
+        //startService(new Intent(this, BackgroundService.class));
     }
 
     @Override
@@ -181,17 +181,15 @@ public class MainActivity extends AppCompatActivity {
      */
     private void prepareAlbums() {
         int[] covers = new int[]{
-                R.drawable.neighbours,
                 R.drawable.message,
                 R.drawable.interest};
 
-        Album a = new Album("Neighbours", covers[0]);
+//        Album a = new Album("Neighbours", covers[0]);
+//        albumList.add(a);
+        Album a = new Album("Messages", covers[0]);
         albumList.add(a);
 
-        a = new Album("Messages", covers[1]);
-        albumList.add(a);
-
-        a = new Album("Interest", covers[2]);
+        a = new Album("Interest", covers[1]);
         albumList.add(a);
 
         adapter.notifyDataSetChanged();
