@@ -3,8 +3,11 @@ package com.mst.karsac.Utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class SharedPreferencesHandler {
+
+    public static final String STATUS = "status";
 
     public static SharedPreferences getSharedPreferences(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context);

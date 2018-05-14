@@ -16,7 +16,6 @@
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
-            app:layout_collapseMode="pin"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
@@ -24,6 +23,7 @@
             app:expandedTitleMarginEnd="64dp"
             app:expandedTitleMarginStart="48dp"
             app:expandedTitleTextAppearance="@android:color/transparent"
+            app:layout_collapseMode="pin"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <RelativeLayout
@@ -52,7 +52,7 @@
                         android:text="@string/backdrop_title"
                         android:textColor="@android:color/white"
                         android:textSize="@dimen/backdrop_title"
-                        android:textStyle="italic"/>
+                        android:textStyle="italic" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -60,7 +60,16 @@
                         android:text="@string/backdrop_subtitle"
                         android:textColor="@android:color/white"
                         android:textSize="@dimen/backdrop_subtitle"
-                        android:textStyle="italic"/>
+                        android:textStyle="italic" />
+
+                    <TextView
+                        android:id="@+id/status_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/white"
+                        android:textSize="@dimen/backdrop_subtitle"
+                        android:textStyle="italic"
+                        android:visibility="gone"/>
 
                 </LinearLayout>
             </RelativeLayout>
@@ -68,14 +77,23 @@
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
+                android:layout_height="?android:attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
 
         </android.support.design.widget.CollapsingToolbarLayout>
 
     </android.support.design.widget.AppBarLayout>
 
     <include layout="@layout/content_main" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_advertise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_settings_remote_white_18" />
 
 </android.support.design.widget.CoordinatorLayout>

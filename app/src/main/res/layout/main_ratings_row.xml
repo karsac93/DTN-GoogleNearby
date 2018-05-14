@@ -8,7 +8,7 @@
         android:id="@+id/mac_address"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mac address:"
+        android:text="Device identifier:"
         android:textColor="@color/colorPrimary"
         android:textSize="16dp"
         android:textStyle="bold" />

@@ -1,14 +1,9 @@
 package com.mst.karsac.messages;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -22,7 +17,6 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
-import com.mst.karsac.MainActivity;
 import com.mst.karsac.R;
 
 import java.io.File;
@@ -84,10 +78,15 @@ public class MessageDetail extends AppCompatActivity {
                 DbHelper dbHelper = GlobalApp.dbHelper;
                 msg.tagsForCurrentImg = tagsObtained;
                 dbHelper.updateMsg(msg);
-                if(!tagsObtained.contains(",")) {tagsObtained = tagsObtained.concat(",");}
+                if (!tagsObtained.contains(",")) {
+                    tagsObtained = tagsObtained.concat(",");
+                }
                 String[] interests = tagsObtained.split(",");
-                for (String intrst : interests)
-                    dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
+                for (String intrst : interests) {
+                    if (intrst.trim().length() > 0) {
+                        dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
+                    }
+                }
             }
         });
     }

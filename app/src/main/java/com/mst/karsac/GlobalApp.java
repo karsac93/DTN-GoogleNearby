@@ -38,6 +38,6 @@ public class GlobalApp extends Application {
         source_mac = UUID.nameUUIDFromBytes(info.getMacAddress().toString().replace(":", "").getBytes()).toString();
         Log.d("GLOBAL", source_mac);
         //startService(new Intent(this, BackgroundService.class));
-        startService(new Intent(this, NearbyService.class));
+        //startService(new Intent(this, NearbyService.class));
     }
 }

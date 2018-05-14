@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -34,11 +33,10 @@ import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
 import com.mst.karsac.ratings.RatingPOJ;
 
-import java.io.BufferedOutputStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,7 +44,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class NearbyService extends Service {
@@ -54,22 +51,37 @@ public class NearbyService extends Service {
     public static final String TAG = "NearbyService";
     public static final String SERVICE_ID = "_wifidemo";
     List<Interest> my_interests = new ArrayList<>();
+    public static String lastdeviceEndpoint = "";
+    static boolean check_connected = false;
+    ArrayList<String> endpointsConnected = new ArrayList<>();
 
     private final ConnectionLifecycleCallback mConnectionLifeCycleCallback = new ConnectionLifecycleCallback() {
         @Override
-        public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
+        public void onConnectionInitiated(final String endpointId, ConnectionInfo connectionInfo) {
             Log.d(TAG, connectionInfo.getEndpointName());
+            check_connected = true;
             String endpointName = connectionInfo.getEndpointName();
+            if(connectionInfo.isIncomingConnection()){
+                Log.d(TAG, "Printing id:" + connectionInfo.getAuthenticationToken() + " EndPointName:" + connectionInfo.getEndpointName());
+            }
             if (endpointName.length() == 36) {
+                Log.d(TAG, "old device and connected device:" + lastdeviceEndpoint + " new device:" + connectionInfo.getEndpointName());
                 Log.d(TAG, "Accepting connection");
+
                 discoveryHandler.removeCallbacks(discoverRunnable);
                 advertiserHandler.removeCallbacks(advertiserRunnable);
                 Nearby.getConnectionsClient(getApplicationContext()).acceptConnection(endpointId, mPayloadCallback);
                 String text = "starting file transfer!";
                 Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            } else {
+                Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
+                        GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
+                advertiserHandler.postDelayed(advertiserRunnable, 20000);
+                Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
+                discoveryHandler.postDelayed(discoverRunnable, 20000);
+                Log.d(TAG, "This is the last connected device:" + lastdeviceEndpoint + " new device:" + connectionInfo.getEndpointName());
             }
         }
-
 
 
         @Override
@@ -85,14 +97,17 @@ public class NearbyService extends Service {
                     break;
                 case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
                     Log.d(TAG, "Connection Failed");
+                    lastdeviceEndpoint = "";
                     break;
                 default:
                     Log.d(TAG, "Connection broken");
+                    lastdeviceEndpoint = "";
+                    endpointsConnected.clear();
                     Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
                             GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
-                    advertiserHandler.postDelayed(advertiserRunnable, 10000);
+                    advertiserHandler.postDelayed(advertiserRunnable, 20000);
                     Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
-                    discoveryHandler.postDelayed(discoverRunnable, 10000);
+                    discoveryHandler.postDelayed(discoverRunnable, 20000);
             }
 
         }
@@ -102,23 +117,13 @@ public class NearbyService extends Service {
             Log.d(TAG, "Disconnected");
             Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
                     GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
-            advertiserHandler.postDelayed(advertiserRunnable, 10000);
+            advertiserHandler.postDelayed(advertiserRunnable, 20000);
             Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
-            discoveryHandler.postDelayed(discoverRunnable, 10000);
-
+            discoveryHandler.postDelayed(discoverRunnable, 20000);
         }
     };
 
-    private void showToastMessage(final String text) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run()
-            {
-                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
 
 
     private void sendInterestData(String endpointId) throws IOException {
@@ -197,9 +202,9 @@ public class NearbyService extends Service {
                                     //Nearby.getConnectionsClient(getApplicationContext()).stopAllEndpoints();
                                     Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
                                             GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
-                                    advertiserHandler.postDelayed(advertiserRunnable, 10000);
+                                    advertiserHandler.postDelayed(advertiserRunnable, 20000);
                                     Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
-                                    discoveryHandler.postDelayed(discoverRunnable, 10000);
+                                    discoveryHandler.postDelayed(discoverRunnable, 20000);
 
                             }
                         } catch (IOException e) {
@@ -234,7 +239,9 @@ public class NearbyService extends Service {
 
     private void handleImages(MessageSerializer incomingMsg) {
         List<ImageMessage> received_msgs = incomingMsg.my_mesages;
-        SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.INCENTIVE, incomingMsg.incentive);
+        Log.d(TAG, "Amount of incentive spent:" + incomingMsg.incentive);
+        int tobeAdded = SharedPreferencesHandler.getIncentive(getApplicationContext(), Setting.INCENTIVE) - incomingMsg.incentive;
+        SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.INCENTIVE, tobeAdded);
         UpdateDbandSetImage(received_msgs);
     }
 
@@ -310,38 +317,80 @@ public class NearbyService extends Service {
             new EndpointDiscoveryCallback() {
                 @Override
                 public void onEndpointFound(String endpointId, DiscoveredEndpointInfo discoveredEndpointInfo) {
-                    Log.d(TAG, "Endpoint found" + endpointId + " discovered endPoint info" + discoveredEndpointInfo.getEndpointName());
+                    Log.d(TAG, "Endpoint found" + endpointId + " discovered endPoint info:" + discoveredEndpointInfo.getEndpointName());
+                    String endpointName = discoveredEndpointInfo.getEndpointName();
                     String service_id = discoveredEndpointInfo.getServiceId();
                     Log.d(TAG, "service_id:" + discoveredEndpointInfo.getServiceId());
-                    if(service_id.contains(SERVICE_ID)){
-                    startConnection(endpointId, discoveredEndpointInfo);
-                  }
+                    boolean flag1 = false;
+                    if (service_id.contains(SERVICE_ID)) {
+                        for (String previousEndpoints : endpointsConnected) {
+                            if (previousEndpoints.equals(endpointName)) {
+                                flag1 = true;
+                                break;
+                            }
+                        }
+                        if (flag1 == false) {
+                            endpointsConnected.add(endpointName);
+                            boolean flag = false;
+                            for (int i = 0; i < endpointName.length(); i++) {
+                                int own = (int) GlobalApp.source_mac.charAt(i);
+                                int received = (int) endpointName.charAt(i);
+                                if (own != received) {
+                                    if (own > received) {
+                                        Log.d(TAG, "Initiating the connection");
+                                        flag = true;
+                                    }
+                                    break;
+                                }
+                            }
+                            if (flag)
+                                startConnection(endpointId, discoveredEndpointInfo);
+                            else
+                                Log.d(TAG, "Waiting for other device to connect");
+                        }
+                        else{
+                            Log.d(TAG, "Previously connected");
+                        }
+                    }
                 }
 
                 @Override
                 public void onEndpointLost(String endpointId) {
                     // A previously discovered endpoint has gone away.
                     Log.d(TAG, "Endpoint found lost");
+                    lastdeviceEndpoint = "";
                     Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
                             GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
-                    advertiserHandler.postDelayed(advertiserRunnable, 10000);
+                    advertiserHandler.postDelayed(advertiserRunnable, 20000);
                     Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
-                    discoveryHandler.postDelayed(discoverRunnable, 10000);
+                    discoveryHandler.postDelayed(discoverRunnable, 20000);
                 }
             };
 
     private void startConnection(String endpointId, DiscoveredEndpointInfo discoveredEndpointInfo) {
         discoveryHandler.removeCallbacks(discoverRunnable);
         advertiserHandler.removeCallbacks(advertiserRunnable);
-
+        check_connected = false;
+        connectionHandler.postDelayed(checkConnectionRunnable, 20000);
         Nearby.getConnectionsClient(this).stopDiscovery();
         Nearby.getConnectionsClient(this).stopAdvertising();
         Log.d(TAG, "Starting connection!");
         Nearby.getConnectionsClient(this).requestConnection(discoveredEndpointInfo.getEndpointName(),
                 endpointId, mConnectionLifeCycleCallback);
-
-
     }
+
+
+    Handler connectionHandler = new Handler();
+    Runnable checkConnectionRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if(check_connected == false){
+                advertiserHandler.postDelayed(advertiserRunnable, 20000);
+                discoveryHandler.postDelayed(discoverRunnable, 20000);
+            }
+        }
+    };
+
 
     Handler discoveryHandler = new Handler();
     Runnable discoverRunnable = new Runnable() {
@@ -349,7 +398,7 @@ public class NearbyService extends Service {
         public void run() {
             Log.d(TAG, "Inside Runnable searching");
             Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
-            discoveryHandler.postDelayed(discoverRunnable, 10000);
+            discoveryHandler.postDelayed(discoverRunnable, 20000);
         }
     };
 
@@ -360,7 +409,7 @@ public class NearbyService extends Service {
             Log.d(TAG, "Inside advertiser runnable");
             Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
                     GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
-            advertiserHandler.postDelayed(advertiserRunnable, 10000);
+            advertiserHandler.postDelayed(advertiserRunnable, 20000);
         }
     };
 
@@ -371,9 +420,9 @@ public class NearbyService extends Service {
     public void onCreate() {
         Nearby.getConnectionsClient(this).startAdvertising(
                 GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
-        advertiserHandler.postDelayed(advertiserRunnable, 10000);
+        advertiserHandler.postDelayed(advertiserRunnable, 20000);
         Nearby.getConnectionsClient(this).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
-        discoveryHandler.postDelayed(discoverRunnable, 10000);
+        discoveryHandler.postDelayed(discoverRunnable, 20000);
     }
 
     @Override
@@ -381,4 +430,18 @@ public class NearbyService extends Service {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        discoveryHandler.removeCallbacks(discoverRunnable);
+        advertiserHandler.removeCallbacks(advertiserRunnable);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_NOT_STICKY;
+    }
+
+
 }

@@ -65,11 +65,6 @@
              You can define the keys for the debug and release targets in src/debug/ and src/release/. 
         -->
 
-        <service
-            android:name=".connections.BackgroundService"
-            android:enabled="true"
-            android:exported="true" />
-
         <activity
             android:name=".Settings.PullActivity"
             android:label="@string/title_activity_pull" />

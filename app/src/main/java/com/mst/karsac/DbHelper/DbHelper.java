@@ -69,11 +69,34 @@ public class DbHelper extends SQLiteOpenHelper {
         values.put(Interest.TYPE, type);
         values.put(Interest.COLUMN_TIMESTAMP, SharedPreferencesHandler.getIntPreferences(context, GlobalApp.TIMESTAMP));
         String selectQuery = "SELECT * FROM " + Interest.TABLE_NAME_INTEREST + " WHERE " +
-                Interest.COLUMN_INTEREST + "='" + interest + "'" ;
+                Interest.COLUMN_INTEREST + "='" + interest + "'";
         Cursor cursor = db.rawQuery(selectQuery, null);
         count = cursor.getCount();
         if (count == 0)
             id = db.insert(Interest.TABLE_NAME_INTEREST, null, values);
+        else if (count == 1) {
+            Log.d(TAG, "ALready exists");
+            if (cursor.moveToFirst()) {
+                do {
+                    Interest interest1 = new Interest();
+                    interest1.setId(cursor.getInt(cursor.getColumnIndex(Interest.COLUMN_ID)));
+                    interest1.setInterest(cursor.getString(cursor.getColumnIndex(Interest.COLUMN_INTEREST)));
+                    interest1.setTimestamp(cursor.getInt(cursor.getColumnIndex(Interest.COLUMN_TIMESTAMP)));
+                    interest1.setValue(cursor.getFloat(cursor.getColumnIndex(Interest.INTEREST_VALUE)));
+
+                    if (type != interest1.getType() && type == 0) {
+                        float val = 0.5f;
+                        if (interest1.getValue() > 0.5f) {
+                            val = interest1.getValue();
+                        }
+                        deleteInterest(interest1, 1);
+                        insertInterest(interest, 0, val);
+                    }
+
+                } while (cursor.moveToNext());
+            }
+        } else
+            Log.d(TAG, "Something wrong, two exists?");
         return id;
     }
 
@@ -88,8 +111,7 @@ public class DbHelper extends SQLiteOpenHelper {
             contentValues.put(RatingPOJ.COLUMN_AVERAGE_RATING, ratingPOJ.average);
             db.insert(RatingPOJ.RATINGS_TABLENAME, null, contentValues);
             Log.d(TAG, "Insertion is successful");
-        }
-        else{
+        } else {
             ContentValues contentValues = new ContentValues();
             contentValues.put(RatingPOJ.COLUMN_AVERAGE_RATING, ratingPOJ.average);
             db.update(RatingPOJ.RATINGS_TABLENAME, contentValues, RatingPOJ.COLUMN_MAC_ADDRESS + "=?", new String[]{ratingPOJ.mac_address});
@@ -98,33 +120,33 @@ public class DbHelper extends SQLiteOpenHelper {
 
     }
 
-    public List<String> getMsgUUID(){
+    public List<String> getMsgUUID() {
         List<String> uuidList = new ArrayList<>();
         SQLiteDatabase db = this.getWritableDatabase();
         String selectQuery = "SELECT * FROM " + Messages.MY_MESSAGE_TABLE_NAME;
         Cursor cursor = db.rawQuery(selectQuery, null);
-        if(cursor.moveToFirst()){
-            do{
+        if (cursor.moveToFirst()) {
+            do {
                 String uuid = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_UUID));
                 uuidList.add(uuid);
-            }while (cursor.moveToNext());
+            } while (cursor.moveToNext());
         }
         return uuidList;
     }
 
-    public List<RatingPOJ> getRatings(){
+    public List<RatingPOJ> getRatings() {
         List<RatingPOJ> ratingsList = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + RatingPOJ.RATINGS_TABLENAME;
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        if(cursor.moveToFirst()){
-            do{
+        if (cursor.moveToFirst()) {
+            do {
                 RatingPOJ ratingPOJ = new RatingPOJ();
                 ratingPOJ.mac_address = cursor.getString(cursor.getColumnIndex(RatingPOJ.COLUMN_MAC_ADDRESS));
                 ratingPOJ.average = cursor.getFloat(cursor.getColumnIndex(RatingPOJ.COLUMN_AVERAGE_RATING));
                 ratingsList.add(ratingPOJ);
-            }while (cursor.moveToNext());
+            } while (cursor.moveToNext());
         }
         return ratingsList;
     }
@@ -246,7 +268,7 @@ public class DbHelper extends SQLiteOpenHelper {
         return count;
     }
 
-    public void truncate(String tableName){
+    public void truncate(String tableName) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         String selectQuery = "DELETE FROM " + tableName;
         sqLiteDatabase.execSQL(selectQuery);

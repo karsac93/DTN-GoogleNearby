@@ -75,6 +75,7 @@ public class Setting extends AppCompatActivity {
             }
         });
 
+        Log.d(TAG, " " + SharedPreferencesHandler.getIncentive(this, INCENTIVE));
         int_incentive.setText(String.valueOf(SharedPreferencesHandler.getIncentive(this, INCENTIVE)));
 
         String mode = SharedPreferencesHandler.getStringPreferences(this, MODE_SELECTION);

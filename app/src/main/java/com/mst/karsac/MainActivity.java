@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,24 +22,31 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.mst.karsac.NearbySupports.NearbyService;
+import com.mst.karsac.NearbySupports.StatusListener;
 import com.mst.karsac.Settings.Setting;
+import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.cardivewProg.Album;
 import com.mst.karsac.cardivewProg.AlbumsAdapter;
 import com.mst.karsac.cardivewProg.GridSpacingItemDecoration;
-import com.mst.karsac.connections.BackgroundService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements StatusListener{
 
     private RecyclerView recyclerView;
     private AlbumsAdapter adapter;
     private List<Album> albumList;
+    FloatingActionButton fab_connect;
+    TextView textView_status;
 
     public static final String TAG = "MainActivity";
 
@@ -59,7 +67,18 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
         GlobalApp.mainActivityContext = this;
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        fab_connect = findViewById(R.id.fab_advertise);
 
+        fab_connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "Starting to discover and connect!", Toast.LENGTH_SHORT).show();
+                startService(new Intent(MainActivity.this, NearbyService.class));
+            }
+        });
+
+        textView_status = findViewById(R.id.status_txt);
+        textView_status.setText("Device Status: Available");
         albumList = new ArrayList<>();
         adapter = new AlbumsAdapter(this, albumList);
 
@@ -200,4 +219,8 @@ public class MainActivity extends AppCompatActivity {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
 
+    @Override
+    public void statusListener(String status) {
+        textView_status.setText("Device status:" + status);
+    }
 }

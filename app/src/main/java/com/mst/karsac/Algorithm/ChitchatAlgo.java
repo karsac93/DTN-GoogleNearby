@@ -28,6 +28,7 @@ public class ChitchatAlgo {
     DbHelper dbHelper = GlobalApp.dbHelper;
     public static final String TAG = ChitchatAlgo.class.getSimpleName();
     int incentive_obtained;
+    int totalTobeSent = 0;
 
     public List<Interest> decayingFunction(int timestamp) {
 
@@ -109,6 +110,7 @@ public class ChitchatAlgo {
     public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac, Mode mode_type, List<String> msgUUIDList, int incentive, Context context) {
         Log.d(TAG, "Incentive obtained:" + incentive);
         incentive_obtained = incentive;
+        totalTobeSent = incentive;
         List<ImageMessage> imageList;
         List<MessageClassification> messageClassifications = new ArrayList<>();
         List<Messages> my_self_Messages = dbHelper.getAllMessages(0);
@@ -126,6 +128,7 @@ public class ChitchatAlgo {
             if (check_exists == false) {
                 boolean flag = checkValid(my_msg, recevied_mac);
                 if (flag == false) {
+                    boolean inter_direct = true;
                     String[] msg_tags = my_msg.getTagsForCurrentImg().split(",");
                     float my_value = 0.0f;
                     float neighbor_value = 0.0f;
@@ -147,8 +150,10 @@ public class ChitchatAlgo {
                         }
                     }
                     Log.d("chitchat", "Comparison of tag values:" + my_value + " - " + neighbor_value);
-                    if (neighbor_value >= my_value && neighbor_value != 0.0f && my_value != 0.0f) {
+                    if (neighbor_value != 0.0f && my_value != 0.0f) {
                         Log.d("Chitchat", mode_type.mode);
+                        if(neighbor_value < 0.5f)
+                            inter_direct = false;
                         if (mode_type.mode.contains(Setting.PULL) && mode_type.lat_lon != null &&
                                 mode_type.lat_lon.trim().length() > 0 && mode_type.lat_lon.contains(",")) {
                             String[] latlng = mode_type.lat_lon.split(",");
@@ -161,7 +166,7 @@ public class ChitchatAlgo {
                             Log.d("chitchat", "Pull condition:" + is_Within_radius);
                             if (is_Within_radius) {
                                 Log.d("chitchat", "Pull condition statisfied, hence adding to the list");
-                                MessageClassification messageClassification = new MessageClassification(my_msg, flag);
+                                MessageClassification messageClassification = new MessageClassification(my_msg, inter_direct);
                                 messageClassifications.add(messageClassification);
 //                                my_msg.destAddr = recevied_mac + "|";
 //                                GlobalApp.dbHelper.updateMsg(my_msg);
@@ -170,7 +175,7 @@ public class ChitchatAlgo {
 //                                imageList.add(img_exchange);
                             }
                         } else {
-                            MessageClassification messageClassification = new MessageClassification(my_msg, flag);
+                            MessageClassification messageClassification = new MessageClassification(my_msg, inter_direct);
                             messageClassifications.add(messageClassification);
 //                            my_msg.destAddr = recevied_mac + "|";
 //                            GlobalApp.dbHelper.updateMsg(my_msg);
@@ -185,7 +190,7 @@ public class ChitchatAlgo {
 
         imageList = selectMessagesToSend(messageClassifications, recevied_mac, context);
         Log.d(TAG, "Size of messages to be sent:" + imageList.size());
-        MessageSerializer final_messages = new MessageSerializer(MessageSerializer.MESSAGE_MODE, imageList, incentive_obtained);
+        MessageSerializer final_messages = new MessageSerializer(MessageSerializer.MESSAGE_MODE, imageList, (totalTobeSent - incentive_obtained));
         return final_messages;
 
     }
@@ -202,8 +207,8 @@ public class ChitchatAlgo {
                 else
                     incentive_obtained = incentive_obtained - 30;
                 if (incentive_obtained > 0) {
-                    Log.d(TAG, "Calculating incentive for direct case");
-                    handleMyIncentive(temp_incen - incentive_obtained, context);
+                    Log.d(TAG, "Calculating incentive for direct case:" + (temp_incen - incentive_obtained));
+                    handleMyIncentive((temp_incen - incentive_obtained), context);
                     my_msg.destAddr = recevied_mac + "|";
                     my_msg.incentive_received = my_msg.incentive_received + temp_incen - incentive_obtained;
                     GlobalApp.dbHelper.updateMsg(my_msg);
@@ -240,6 +245,7 @@ public class ChitchatAlgo {
         present_incentive = present_incentive + incentive_add;
         Log.d(TAG, "incentive being added:" + present_incentive);
         SharedPreferencesHandler.setIntPreference(context, Setting.INCENTIVE, present_incentive);
+        Log.d(TAG, " " + SharedPreferencesHandler.getIncentive(context, Setting.INCENTIVE));
     }
 
     private String getBase64String(String filePath) {

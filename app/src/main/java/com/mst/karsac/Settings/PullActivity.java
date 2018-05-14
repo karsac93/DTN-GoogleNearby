@@ -21,7 +21,6 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.LocationHandler;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
-import com.mst.karsac.connections.BackgroundService;
 
 public class PullActivity extends FragmentActivity implements OnMapReadyCallback {
 

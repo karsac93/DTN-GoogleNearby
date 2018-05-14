@@ -191,7 +191,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         @Override
         public void run() {
             try {
-                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("bdcea2fc120e4f81882e9a8f434f6f37")
+                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("bc299ba7d08044f3b603ab625b0ff565")
                         .client(new OkHttpClient()).buildSync();
                 Log.d("hello", "Inside run");
                 activity.runOnUiThread(new Runnable() {
@@ -223,7 +223,12 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                run();
+                activity.runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(InboxActivity.this, "Check the net connection, not able to add tags!", Toast.LENGTH_SHORT).show();
+                        msgRecyclerview.setClickable(false);
+                    }
+                });
             }
         }
     }
