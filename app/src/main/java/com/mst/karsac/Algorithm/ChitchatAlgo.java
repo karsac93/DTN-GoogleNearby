@@ -200,26 +200,16 @@ public class ChitchatAlgo {
                             float[] results = new float[1];
                             Location.distanceBetween(pull_lat, pull_lon, my_msg.lat, my_msg.lon, results);
                             float distance_in_miles = results[0];
-                            boolean is_Within_radius = distance_in_miles < (mode_type.radius * 1500);
+                            boolean is_Within_radius = distance_in_miles < (mode_type.radius * 1500.0f);
                             Log.d("chitchat", "Pull condition:" + is_Within_radius);
                             if (is_Within_radius) {
                                 Log.d("chitchat", "Pull condition statisfied, hence adding to the list");
                                 MessageClassification messageClassification = new MessageClassification(my_msg, inter_direct);
                                 messageClassifications.add(messageClassification);
-//                                my_msg.destAddr = recevied_mac + "|";
-//                                GlobalApp.dbHelper.updateMsg(my_msg);
-//                                String msg_string = getBase64String(my_msg.imgPath);
-//                                ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
-//                                imageList.add(img_exchange);
                             }
                         } else {
                             MessageClassification messageClassification = new MessageClassification(my_msg, inter_direct);
                             messageClassifications.add(messageClassification);
-//                            my_msg.destAddr = recevied_mac + "|";
-//                            GlobalApp.dbHelper.updateMsg(my_msg);
-//                            String msg_string = getBase64String(my_msg.imgPath);
-//                            ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
-//                            imageList.add(img_exchange);
                         }
                     }
                 }

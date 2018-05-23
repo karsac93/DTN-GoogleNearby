@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
+import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.connections.ImageMessage;
 import com.mst.karsac.messages.Messages;
 
@@ -44,6 +45,10 @@ public class RogerActivity extends AppCompatActivity {
         editText_IP = findViewById(R.id.ip);
         sendtoIp_btn = findViewById(R.id.sendtoip_btn);
 
+        String last_ip_address = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), SharedPreferencesHandler.LAST_IPADDRESS);
+        if(last_ip_address.length() > 0){
+            editText_IP.setText(last_ip_address);
+        }
         sendtoIp_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -137,6 +142,7 @@ public class RogerActivity extends AppCompatActivity {
             try {
                 socket = new Socket();
                 socket.connect(new InetSocketAddress(serverAddress, PORT), SOCKET_TIMEOUT);
+                SharedPreferencesHandler.setStringPreferences(getApplicationContext(), SharedPreferencesHandler.LAST_IPADDRESS, serverAddress);
                 Log.d("RogerActivity", "Client socket - " + socket.isConnected());
                 OutputStream outputStream = socket.getOutputStream();
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);

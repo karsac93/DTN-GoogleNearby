@@ -41,6 +41,9 @@ public class RatingsActivity extends AppCompatActivity {
                     ratingPOJ.type = "Intermediary";
                     ratingsObjects.add(ratingPOJ);
                 }
+                else{
+                    break;
+                }
             }
             RatingPOJ ratingPOJ = new RatingPOJ();
             ratingPOJ.mac_address = msg.sourceMac;

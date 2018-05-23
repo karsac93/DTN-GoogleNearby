@@ -58,6 +58,7 @@ public class NearbyService extends Service {
     ArrayList<String> endpointsConnected = new ArrayList<>();
     public static boolean check_start = true;
     public static boolean check_completed = false;
+    static String endpointId_last;
 
     private final ConnectionLifecycleCallback mConnectionLifeCycleCallback = new ConnectionLifecycleCallback() {
         @Override
@@ -79,11 +80,8 @@ public class NearbyService extends Service {
                 String text = "starting file transfer!";
                 Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
             } else {
-                Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                        GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-                advertiserHandler.postDelayed(advertiserRunnable, 30000);
-                Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-                discoveryHandler.postDelayed(discoverRunnable, 30000);
+                advertiserHandler.post(advertiserRunnable);
+                discoveryHandler.post(discoverRunnable);
                 Log.d(TAG, "This is the last connected device:" + lastdeviceEndpoint + " new device:" + connectionInfo.getEndpointName());
             }
         }
@@ -109,11 +107,8 @@ public class NearbyService extends Service {
                     Toast.makeText(NearbyService.this, "Connection broken, searching nearby devices again!", Toast.LENGTH_SHORT).show();
                     lastdeviceEndpoint = "";
                     endpointsConnected.clear();
-                    Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                            GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-                    advertiserHandler.postDelayed(advertiserRunnable, 30000);
-                    Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-                    discoveryHandler.postDelayed(discoverRunnable, 30000);
+                    advertiserHandler.post(advertiserRunnable);
+                    discoveryHandler.post(discoverRunnable);
             }
 
         }
@@ -123,11 +118,9 @@ public class NearbyService extends Service {
             Log.d(TAG, "Disconnected");
             discoveryHandler.removeCallbacks(discoverRunnable);
             advertiserHandler.removeCallbacks(advertiserRunnable);
-            Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                    GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-            advertiserHandler.postDelayed(advertiserRunnable, 30000);
-            Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-            discoveryHandler.postDelayed(discoverRunnable, 30000);
+            discoveryHandler.post(discoverRunnable);
+            advertiserHandler.post(advertiserRunnable);
+            //discoveryHandler.post(discoverRunnable);
         }
     };
 
@@ -201,20 +194,22 @@ public class NearbyService extends Service {
                             switch (incomingMsg.mode) {
                                 case MessageSerializer.INTEREST_MODE:
                                     sendImageMessages(incomingMsg, endpointId);
+                                    lastdeviceEndpoint = incomingMsg.my_macaddress;
                                     break;
                                 case MessageSerializer.RECEIVED_MODE:
                                     Log.d(TAG, "inside received mode");
-                                    Toast.makeText(getApplicationContext(), "File transfer complete!", Toast.LENGTH_SHORT).show();
-                                    Log.d(TAG, "starting to search again");
-                                    check_completed = false;
                                     ArrayList<Messages> tobeUpdated = ChitchatAlgo.getToBeUpdated();
                                     for (Messages msg : tobeUpdated)
                                         GlobalApp.dbHelper.updateMsg(msg);
-                                    Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                                            GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-                                    advertiserHandler.postDelayed(advertiserRunnable, 30000);
-                                    Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-                                    discoveryHandler.postDelayed(discoverRunnable, 30000);
+                                    Toast.makeText(getApplicationContext(), "File transfer complete!", Toast.LENGTH_SHORT).show();
+                                    checkCompletedHandler.post(checkCompletedRunnable);
+                                    break;
+                                case MessageSerializer.FINAL_MODE:
+                                    Log.d(TAG, "Inside final mode");
+                                    Nearby.getConnectionsClient(getApplicationContext()).disconnectFromEndpoint(endpointId);
+                                    advertiserHandler.post(advertiserRunnable);
+                                    discoveryHandler.post(discoverRunnable);
+                                    break;
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -224,6 +219,7 @@ public class NearbyService extends Service {
                     }
                     if (payload.getType() == Payload.Type.STREAM) {
                         Log.d(TAG, "Inside file mode");
+                        endpointId_last = endpointId;
                         ReceiveFileRunnable receiveFileRunnable = new ReceiveFileRunnable(payload, incomingMsg, endpointId);
                         Thread thread = new Thread(receiveFileRunnable);
                         thread.start();
@@ -232,10 +228,31 @@ public class NearbyService extends Service {
 
                 @Override
                 public void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {
-                    Log.d(TAG, update.getStatus() + " ");
-                    Log.d(TAG, update.getBytesTransferred() + " ");
+                    Log.d(TAG, update.getStatus() + " " + update.getTotalBytes() + " " + update.getBytesTransferred());
                 }
             };
+    Handler checkCompletedHandler = new Handler();
+    Runnable checkCompletedRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (check_completed == true) {
+                check_completed = false;
+                Log.d(TAG, "Atlast sending the message");
+                MessageSerializer messageSerializer = new MessageSerializer(MessageSerializer.FINAL_MODE);
+                byte[] bytes = new byte[0];
+                try {
+                    bytes = new SerializationHelper().serialize(messageSerializer);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                sendPayload(endpointId_last, bytes);
+            }
+            else{
+                Log.d(TAG, "Waiting to receive files");
+                checkCompletedHandler.postDelayed(checkCompletedRunnable, 1000);
+            }
+        }
+    };
 
     class ReceiveFileRunnable implements Runnable {
         Payload payload;
@@ -258,10 +275,11 @@ public class NearbyService extends Service {
                     //incomingMsg = (MessageSerializer) ois.readObject();
                     Log.d(TAG, "Message Mode:" + incomingMsg.mode);
                     handleImages(incomingMsg);
+                    check_completed = true;
+                    ois.close();
                     MessageSerializer messageSerializer = new MessageSerializer(MessageSerializer.RECEIVED_MODE);
                     byte[] bytes = new SerializationHelper().serialize(messageSerializer);
                     sendPayload(endpointId, bytes);
-                    check_completed = true;
                     break;
                 }
             } catch (Exception e) {
@@ -319,27 +337,24 @@ public class NearbyService extends Service {
     }
 
     private void sendImageMessages(MessageSerializer interestMsg, String endpointId) {
-        if (isClient == true) {
-            isClient = false;
-            boolean flag = false;
-            for (String endpoints : endpointsConnected) {
-                if (endpoints.equals(interestMsg.my_macaddress)) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag) {
-                Nearby.getConnectionsClient(this).stopAllEndpoints();
-                Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                        GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-                advertiserHandler.postDelayed(advertiserRunnable, 30000);
-                Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-                discoveryHandler.postDelayed(discoverRunnable, 30000);
-            } else {
+//        if (isClient == true) {
+//            isClient = false;
+//            boolean flag = false;
+//            for (String endpoints : endpointsConnected) {
+//                if (endpoints.equals(interestMsg.my_macaddress)) {
+//                    flag = true;
+//                    break;
+//                }
+//            }
+//            if (flag) {
+//                Nearby.getConnectionsClient(this).stopAllEndpoints();
+//                advertiserHandler.post(advertiserRunnable);
+//                discoveryHandler.post(discoverRunnable);
+//            } else {
                 secondPhaseTransfer(interestMsg, endpointId);
-            }
-        } else
-            secondPhaseTransfer(interestMsg, endpointId);
+//            }
+//        } else
+//            secondPhaseTransfer(interestMsg, endpointId);
 
 
     }
@@ -414,11 +429,8 @@ public class NearbyService extends Service {
                     discoveryHandler.removeCallbacks(discoverRunnable);
                     advertiserHandler.removeCallbacks(advertiserRunnable);
                     Toast.makeText(NearbyService.this, "Endpoint discovered has been lost", Toast.LENGTH_LONG).show();
-                    Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                            GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-                    advertiserHandler.postDelayed(advertiserRunnable, 30000);
-                    Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-                    discoveryHandler.postDelayed(discoverRunnable, 30000);
+                    advertiserHandler.post(advertiserRunnable);
+                    discoveryHandler.post(discoverRunnable);
                 }
             };
 
@@ -475,11 +487,8 @@ public class NearbyService extends Service {
 
     @Override
     public void onCreate() {
-        Nearby.getConnectionsClient(this).startAdvertising(
-                GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-        advertiserHandler.postDelayed(advertiserRunnable, 30000);
-        Nearby.getConnectionsClient(this).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-        discoveryHandler.postDelayed(discoverRunnable, 30000);
+        advertiserHandler.post(advertiserRunnable);
+        discoveryHandler.post(discoverRunnable);
 
     }
 
@@ -504,11 +513,8 @@ public class NearbyService extends Service {
             advertiserHandler.removeCallbacks(advertiserRunnable);
             discoveryHandler.removeCallbacks(discoverRunnable);
             Nearby.getConnectionsClient(getApplicationContext()).stopAllEndpoints();
-            Nearby.getConnectionsClient(this).startAdvertising(
-                    GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
-            advertiserHandler.postDelayed(advertiserRunnable, 30000);
-            Nearby.getConnectionsClient(this).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
-            discoveryHandler.postDelayed(discoverRunnable, 30000);
+            advertiserHandler.post(advertiserRunnable);
+            discoveryHandler.post(discoverRunnable);
         }
         check_start = false;
         return START_NOT_STICKY;

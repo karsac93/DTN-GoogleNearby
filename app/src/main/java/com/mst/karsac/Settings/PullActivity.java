@@ -49,7 +49,7 @@ public class PullActivity extends FragmentActivity implements OnMapReadyCallback
         String tags_temp = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.TAG_KEYS);
         if(tags_temp.trim().length() > 0)
             tags.setText(tags_temp);
-        int radius_temp = SharedPreferencesHandler.getRadiusPreferences(getApplicationContext(), Setting.RADIUS);
+        float radius_temp = SharedPreferencesHandler.getRadiusPreferences(getApplicationContext(), Setting.RADIUS);
         radius.setText(String.valueOf(radius_temp));
 
         save_pull.setOnClickListener(new View.OnClickListener() {
@@ -73,8 +73,8 @@ public class PullActivity extends FragmentActivity implements OnMapReadyCallback
                 String radius_string = radius.getText().toString();
                 if (radius_string.trim().length() > 0 && lat_long_location.contains(",")) {
                     try {
-                        int radius_int = Integer.parseInt(radius_string);
-                        SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.RADIUS, radius_int);
+                        float radius_int = Float.parseFloat(radius_string);
+                        SharedPreferencesHandler.setFloatPreference(getApplicationContext(), Setting.RADIUS, radius_int);
                     } catch (Exception e) {
                         Toast.makeText(getApplicationContext(), "Enter a valid radius!", Toast.LENGTH_SHORT).show();
                     }

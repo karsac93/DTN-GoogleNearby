@@ -13,6 +13,7 @@ public class MessageSerializer implements Serializable {
     public static final String INTEREST_MODE = "interest_mode";
     public static final String MESSAGE_MODE = "message";
     public static final String RECEIVED_MODE = "received";
+    public static final String FINAL_MODE = "final_received";
 
     public List<Interest> my_interests;
     public List<ImageMessage> my_mesages;

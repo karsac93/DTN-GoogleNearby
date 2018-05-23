@@ -6,12 +6,12 @@ public class Mode implements Serializable{
 
     public String mode;
     public String lat_lon;
-    public int radius;
+    public float radius;
 
     public Mode() {
     }
 
-    public Mode(String mode, String lat_lon, int radius) {
+    public Mode(String mode, String lat_lon, float radius) {
         this.mode = mode;
         this.lat_lon = lat_lon;
         this.radius = radius;
