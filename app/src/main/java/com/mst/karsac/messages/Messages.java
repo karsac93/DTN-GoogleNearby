@@ -1,8 +1,5 @@
 package com.mst.karsac.messages;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 import java.io.Serializable;
 
 /**
@@ -79,6 +76,8 @@ public class Messages implements Serializable{
             + COLUMN_LAT + " REAL," + COLUMN_LON + " REAL," + COLUMN_TYPE + " INTEGER, "
             + COLUMN_PAID + " INTEGER," + COLUMN_RECEIVED + " INTEGER," + COLUMN_PROMISED + " INTEGER)";
 
+    public Messages() {
+    }
 
     public int getType() {
         return type;

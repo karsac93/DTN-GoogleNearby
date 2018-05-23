@@ -15,6 +15,8 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 
 import com.mst.karsac.Neighbours.NeighboursActivity;
+import com.mst.karsac.RatingsActivity.FinalRatings;
+import com.mst.karsac.Roger.RogerActivity;
 import com.mst.karsac.interest.InterestActivity;
 import com.mst.karsac.R;
 import com.mst.karsac.messages.InboxActivity;
@@ -48,9 +50,14 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
                             intent = new Intent(mContext, InboxActivity.class);
                             mContext.startActivity(intent);
                             break;
-                        case "Neighbours":
-                            intent = new Intent(mContext, NeighboursActivity.class);
+                        case "Send to IP":
+                            intent = new Intent(mContext, RogerActivity.class);
                             mContext.startActivity(intent);
+                            break;
+                        case"Ratings":
+                            intent = new Intent(mContext, FinalRatings.class);
+                            mContext.startActivity(intent);
+                            break;
                     }
                 }
             });

@@ -35,6 +35,7 @@ public class GlobalApp extends Application {
 //        wifiManager.setWifiEnabled(false);
 //        wifiManager.setWifiEnabled(true);
         WifiInfo info = wifiManager.getConnectionInfo();
+        String address = info.getMacAddress();
         source_mac = UUID.nameUUIDFromBytes(info.getMacAddress().toString().replace(":", "").getBytes()).toString();
         Log.d("GLOBAL", source_mac);
         //startService(new Intent(this, BackgroundService.class));

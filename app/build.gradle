@@ -36,6 +36,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-nearby:11.8.0'
     implementation 'com.android.support:multidex:1.0.0'
     implementation 'com.clarifai.clarifai-api2:core:2.4.0'
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
+
 
     implementation 'com.google.android.gms:play-services-maps:11.8.0'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

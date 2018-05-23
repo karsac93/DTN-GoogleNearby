@@ -6,19 +6,18 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-import android.widget.ListView;
 
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
 import com.mst.karsac.ratings.RatingPOJ;
-import com.mst.karsac.ratings.RatingsActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -75,7 +74,7 @@ public class DbHelper extends SQLiteOpenHelper {
         if (count == 0)
             id = db.insert(Interest.TABLE_NAME_INTEREST, null, values);
         else if (count == 1) {
-            Log.d(TAG, "ALready exists");
+            Log.d(TAG, "Already exists");
             if (cursor.moveToFirst()) {
                 do {
                     Interest interest1 = new Interest();
@@ -83,8 +82,10 @@ public class DbHelper extends SQLiteOpenHelper {
                     interest1.setInterest(cursor.getString(cursor.getColumnIndex(Interest.COLUMN_INTEREST)));
                     interest1.setTimestamp(cursor.getInt(cursor.getColumnIndex(Interest.COLUMN_TIMESTAMP)));
                     interest1.setValue(cursor.getFloat(cursor.getColumnIndex(Interest.INTEREST_VALUE)));
-
+                    interest1.setType(cursor.getInt(cursor.getColumnIndex(Interest.TYPE)));
+                    Log.d(TAG, "present interest type:"  + interest1.getType() + "insert type:" + type + " interest name:" + interest1.getInterest());
                     if (type != interest1.getType() && type == 0) {
+                        Log.d(TAG, "different types!");
                         float val = 0.5f;
                         if (interest1.getValue() > 0.5f) {
                             val = interest1.getValue();
@@ -120,15 +121,16 @@ public class DbHelper extends SQLiteOpenHelper {
 
     }
 
-    public List<String> getMsgUUID() {
-        List<String> uuidList = new ArrayList<>();
+    public HashMap<String, String> getMsgUUID() {
+        HashMap<String, String> uuidList = new HashMap<>();
         SQLiteDatabase db = this.getWritableDatabase();
         String selectQuery = "SELECT * FROM " + Messages.MY_MESSAGE_TABLE_NAME;
         Cursor cursor = db.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
             do {
                 String uuid = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_UUID));
-                uuidList.add(uuid);
+                String tags = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_TAGS));
+                uuidList.put(uuid, tags);
             } while (cursor.moveToNext());
         }
         return uuidList;
@@ -303,6 +305,15 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(Messages.COLUMN_RECEIVED, message.incentive_received);
 
         int id = db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_ID + "=?", new String[]{String.valueOf(message.id)});
+        return id;
+    }
+
+    public int updateMsgTags(String msgUUID, String tags) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(Messages.COLUMN_TAGS,tags);
+
+        int id = db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_UUID + "=?", new String[]{msgUUID});
         return id;
     }
 }

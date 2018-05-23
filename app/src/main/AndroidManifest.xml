@@ -33,6 +33,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,18 +44,22 @@
         <activity
             android:name=".interest.InterestActivity"
             android:label="@string/title_activity_interest"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".messages.InboxActivity"
             android:label="@string/title_activity_inbox"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".messages.MessageDetail"
             android:label="@string/title_activity_message_detail"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".Settings.Setting"
             android:label="@string/title_activity_setting"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -67,14 +72,22 @@
 
         <activity
             android:name=".Settings.PullActivity"
-            android:label="@string/title_activity_pull" />
-        <activity android:name=".ratings.RatingsActivity" />
-        <activity android:name=".Neighbours.NeighboursActivity" />
+            android:label="@string/title_activity_pull"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ratings.RatingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Neighbours.NeighboursActivity"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".NearbySupports.NearbyService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".Roger.RogerActivity" />
+        <activity android:name=".RatingsActivity.FinalRatings"></activity>
     </application>
 
 </manifest>

@@ -2,6 +2,7 @@ package com.mst.karsac;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -96,21 +97,6 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         }
     }
 
-    public void showDialogWiFi(){
-        Log.d("BroadcastReceiver", "App cannot function without WIFI");
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Please enable WiFi to start using the app!");
-        builder.setCancelable(false);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 
     private void checkPermissions() {
         boolean flag = false;
@@ -201,15 +187,23 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
     private void prepareAlbums() {
         int[] covers = new int[]{
                 R.drawable.message,
-                R.drawable.interest};
+                R.drawable.interest,
+                R.drawable.sendip,
+                R.drawable.rating};
 
-//        Album a = new Album("Neighbours", covers[0]);
-//        albumList.add(a);
         Album a = new Album("Messages", covers[0]);
         albumList.add(a);
 
         a = new Album("Interest", covers[1]);
         albumList.add(a);
+
+        a = new Album("Send to IP", covers[2]);
+        albumList.add(a);
+
+        a = new Album("Ratings", covers[3]);
+        albumList.add(a);
+
+
 
         adapter.notifyDataSetChanged();
     }

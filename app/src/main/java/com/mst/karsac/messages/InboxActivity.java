@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
@@ -191,7 +189,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         @Override
         public void run() {
             try {
-                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("bc299ba7d08044f3b603ab625b0ff565")
+                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("d17044d240f34f05883aee9a2d24c03d")
                         .client(new OkHttpClient()).buildSync();
                 Log.d("hello", "Inside run");
                 activity.runOnUiThread(new Runnable() {

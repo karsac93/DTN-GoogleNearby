@@ -20,7 +20,12 @@ import com.mst.karsac.messages.Messages;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class ChitchatAlgo {
@@ -29,6 +34,8 @@ public class ChitchatAlgo {
     public static final String TAG = ChitchatAlgo.class.getSimpleName();
     int incentive_obtained;
     int totalTobeSent = 0;
+    public static int present_incentive;
+    public static ArrayList<Messages> toBeUpdated = new ArrayList<>();
 
     public List<Interest> decayingFunction(int timestamp) {
 
@@ -55,6 +62,14 @@ public class ChitchatAlgo {
             }
         }
         return interests;
+    }
+
+    public static int getPresent_incentive() {
+        return present_incentive;
+    }
+
+    public static ArrayList<Messages> getToBeUpdated() {
+        return toBeUpdated;
     }
 
     public void growthAlgorithm(List<Interest> obtained_interest, List<Interest> my_self_interests) {
@@ -107,8 +122,10 @@ public class ChitchatAlgo {
 
     }
 
-    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac, Mode mode_type, List<String> msgUUIDList, int incentive, Context context) {
+    public MessageSerializer RoutingProtocol(List<Interest> obtained_interest, List<Interest> my_interest, String recevied_mac, Mode mode_type, HashMap<String, String> msgUUIDList, int incentive, Context context) {
         Log.d(TAG, "Incentive obtained:" + incentive);
+        toBeUpdated.clear();
+        present_incentive = SharedPreferencesHandler.getIncentive(context, Setting.INCENTIVE);
         incentive_obtained = incentive;
         totalTobeSent = incentive;
         List<ImageMessage> imageList;
@@ -118,10 +135,31 @@ public class ChitchatAlgo {
         my_self_Messages.addAll(my_transient_messages);
         for (Messages my_msg : my_self_Messages) {
             boolean check_exists = false;
-            for (String receiver_UUID : msgUUIDList) {
+            for (String receiver_UUID : msgUUIDList.keySet()) {
                 if (my_msg.uuid.contains(receiver_UUID)) {
                     check_exists = true;
                     Log.d(TAG, "this message is already present with the sender:" + receiver_UUID + " Message UUID:" + my_msg.uuid);
+                    Log.d(TAG, "Checking the difference in tags");
+                    String my_tags = my_msg.tagsForCurrentImg;
+                    String received_tags = msgUUIDList.get(receiver_UUID);
+                    List<String> my_tag_list = new ArrayList<>(Arrays.asList(my_tags.split(",")));
+                    List<String> received_tags_list = new ArrayList<>(Arrays.asList(received_tags.split(",")));
+                    List<String> new_values = new ArrayList<>();
+                    for(String each_my_tag : my_tag_list){
+                        if(!received_tags_list.contains(each_my_tag)){
+                            new_values.add(each_my_tag);
+                        }
+                    }
+                    received_tags_list.addAll(new_values);
+                    StringBuilder builder = new StringBuilder();
+                    for(String final_tag : received_tags_list){
+                        builder.append(final_tag).append(",");
+                    }
+                    String final_tags = "";
+                    if(builder.length()>0){
+                        final_tags = builder.substring(0, builder.length()-1).toString();
+                    }
+                    msgUUIDList.put(receiver_UUID, final_tags);
                     break;
                 }
             }
@@ -191,6 +229,7 @@ public class ChitchatAlgo {
         imageList = selectMessagesToSend(messageClassifications, recevied_mac, context);
         Log.d(TAG, "Size of messages to be sent:" + imageList.size());
         MessageSerializer final_messages = new MessageSerializer(MessageSerializer.MESSAGE_MODE, imageList, (totalTobeSent - incentive_obtained));
+        final_messages.msgUUIDList = msgUUIDList;
         return final_messages;
 
     }
@@ -203,19 +242,23 @@ public class ChitchatAlgo {
                 Messages my_msg = messageClassification.messages;
                 if (my_msg.incentive_promised != 0) {
                     incentive_obtained = incentive_obtained - my_msg.incentive_promised;
+                    my_msg.incentive_promised = 0;
                 }
-                else
+                else {
                     incentive_obtained = incentive_obtained - 30;
+                }
                 if (incentive_obtained > 0) {
                     Log.d(TAG, "Calculating incentive for direct case:" + (temp_incen - incentive_obtained));
                     handleMyIncentive((temp_incen - incentive_obtained), context);
                     my_msg.destAddr = recevied_mac + "|";
                     my_msg.incentive_received = my_msg.incentive_received + temp_incen - incentive_obtained;
-                    GlobalApp.dbHelper.updateMsg(my_msg);
-                    my_msg.incentive_received = 0;
-                    my_msg.incentive_paid = temp_incen - incentive_obtained;
-                    String msg_string = getBase64String(my_msg.imgPath);
-                    ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                    //GlobalApp.dbHelper.updateMsg(my_msg);
+                    toBeUpdated.add(my_msg);
+                    Messages msg_send = (Messages) deepCopy(my_msg);
+                    msg_send.incentive_received = 0;
+                    msg_send.incentive_paid = temp_incen - incentive_obtained;
+                    String msg_string = getBase64String(msg_send.imgPath);
+                    ImageMessage img_exchange = new ImageMessage(msg_send, msg_string);
                     imageList.add(img_exchange);
                 }
                 else
@@ -228,10 +271,12 @@ public class ChitchatAlgo {
                 Log.d(TAG, "Calculating incentive for indirect case");
                 Messages my_msg = messageClassification.messages;
                 my_msg.destAddr = recevied_mac + "|";
-                GlobalApp.dbHelper.updateMsg(my_msg);
-                my_msg.incentive_promised = 25;
-                String msg_string = getBase64String(my_msg.imgPath);
-                ImageMessage img_exchange = new ImageMessage(my_msg, msg_string);
+                //GlobalApp.dbHelper.updateMsg(my_msg);
+                toBeUpdated.add(my_msg);
+                Messages msg_send = (Messages) deepCopy(my_msg);
+                msg_send.incentive_promised = 25;
+                String msg_string = getBase64String(msg_send.imgPath);
+                ImageMessage img_exchange = new ImageMessage(msg_send, msg_string);
                 imageList.add(img_exchange);
             }
         }
@@ -241,14 +286,13 @@ public class ChitchatAlgo {
 
     private void handleMyIncentive(int incentive_add, Context context) {
         Log.d(TAG, "handleMyIncentive");
-        int present_incentive = SharedPreferencesHandler.getIncentive(context, Setting.INCENTIVE);
         present_incentive = present_incentive + incentive_add;
         Log.d(TAG, "incentive being added:" + present_incentive);
         SharedPreferencesHandler.setIntPreference(context, Setting.INCENTIVE, present_incentive);
         Log.d(TAG, " " + SharedPreferencesHandler.getIncentive(context, Setting.INCENTIVE));
     }
 
-    private String getBase64String(String filePath) {
+    public String getBase64String(String filePath) {
         String img_string = null;
         // give your image file url in mCurrentPhotoPath
         try {
@@ -257,13 +301,14 @@ public class ChitchatAlgo {
             // In case you want to compress your image, here it's at 40%
             bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
             byte[] byteArray = byteArrayOutputStream.toByteArray();
-            img_string = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            img_string = Base64.encodeToString(byteArray, Base64.NO_WRAP);
         } catch (Exception e) {
             e.printStackTrace();
         }
         Log.d("Chitchat", "Imgstring:" + img_string);
         return img_string;
     }
+
 
     public boolean checkValid(Messages msg, String received_mac) {
         Log.d("CHITCHAT", "Message name and inside checkvalid to send the image:" + msg.fileName);
@@ -294,6 +339,26 @@ public class ChitchatAlgo {
         }
         Log.d("CHITAHCAT", "Checkvalid conclusion:" + flag);
         return flag;
+    }
+
+    public Object deepCopy(Object input) {
+
+        Object output = null;
+        try {
+            // Writes the object
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+            objectOutputStream.writeObject(input);
+
+            // Reads the object
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+            ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+            output = objectInputStream.readObject();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return output;
     }
 
 }

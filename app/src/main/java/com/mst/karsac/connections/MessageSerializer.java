@@ -6,6 +6,7 @@ import com.mst.karsac.ratings.RatingPOJ;
 
 import java.io.Serializable;
 import java.net.ServerSocket;
+import java.util.HashMap;
 import java.util.List;
 
 public class MessageSerializer implements Serializable {
@@ -19,7 +20,7 @@ public class MessageSerializer implements Serializable {
     public String my_macaddress;
     public Mode mode_type;
     public List<RatingPOJ> ratingPOJList;
-    public List<String> msgUUIDList;
+    public HashMap<String, String> msgUUIDList;
     public int incentive;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
