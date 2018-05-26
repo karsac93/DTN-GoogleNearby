@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 public class ChitchatAlgo {
 
@@ -225,6 +226,7 @@ public class ChitchatAlgo {
     }
 
     private List<ImageMessage> selectMessagesToSend(List<MessageClassification> messageClassifications, String recevied_mac, Context context) {
+        int incentive_promised = 30 - getRandomNumber();
         List<ImageMessage> imageList = new ArrayList<>();
         for (MessageClassification messageClassification : messageClassifications) {
             int temp_incen = incentive_obtained;
@@ -240,7 +242,7 @@ public class ChitchatAlgo {
                 if (incentive_obtained > 0) {
                     Log.d(TAG, "Calculating incentive for direct case:" + (temp_incen - incentive_obtained));
                     handleMyIncentive((temp_incen - incentive_obtained), context);
-                    my_msg.destAddr = recevied_mac + "|";
+                    my_msg.destAddr = GlobalApp.source_mac + "|" + recevied_mac + "|";
                     my_msg.incentive_received = my_msg.incentive_received + temp_incen - incentive_obtained;
                     //GlobalApp.dbHelper.updateMsg(my_msg);
                     toBeUpdated.add(my_msg);
@@ -260,11 +262,11 @@ public class ChitchatAlgo {
             if (messageClassification.type == false && messageClassification.messages.incentive_promised == 0) {
                 Log.d(TAG, "Calculating incentive for indirect case");
                 Messages my_msg = messageClassification.messages;
-                my_msg.destAddr = recevied_mac + "|";
+                my_msg.destAddr = GlobalApp.source_mac + "|" + recevied_mac + "|";
                 //GlobalApp.dbHelper.updateMsg(my_msg);
                 toBeUpdated.add(my_msg);
                 Messages msg_send = (Messages) deepCopy(my_msg);
-                msg_send.incentive_promised = 25;
+                msg_send.incentive_promised = incentive_promised;
                 String msg_string = getBase64String(msg_send.imgPath);
                 ImageMessage img_exchange = new ImageMessage(msg_send, msg_string);
                 imageList.add(img_exchange);
@@ -272,6 +274,12 @@ public class ChitchatAlgo {
         }
         return imageList;
 
+    }
+
+    public int getRandomNumber(){
+        int max = 10, min = 1;
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + min;
     }
 
     private void handleMyIncentive(int incentive_add, Context context) {

@@ -34,7 +34,7 @@ public class RatingsActivity extends AppCompatActivity {
             String[] msg_array = msg.destAddr.split("\\|");
 
             for (String mac_addresses : msg_array) {
-                if (!mac_addresses.contains(GlobalApp.source_mac)) {
+                if (!mac_addresses.contains(GlobalApp.source_mac) && !msg.sourceMac.contains(mac_addresses)) {
                     RatingPOJ ratingPOJ = new RatingPOJ();
                     ratingPOJ.average = 0.0f;
                     ratingPOJ.mac_address = mac_addresses;

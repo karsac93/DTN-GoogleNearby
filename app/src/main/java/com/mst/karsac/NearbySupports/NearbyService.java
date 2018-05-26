@@ -56,9 +56,11 @@ public class NearbyService extends Service {
     static boolean check_connected = false;
     static boolean isClient = false;
     ArrayList<String> endpointsConnected = new ArrayList<>();
-    public static boolean check_start = true;
+    public static boolean check_start = true, inside_file = false;
     public static boolean check_completed = false;
     static String endpointId_last;
+    HashMap<String, String> msgUUIDTags = new HashMap<>();
+
 
     private final ConnectionLifecycleCallback mConnectionLifeCycleCallback = new ConnectionLifecycleCallback() {
         @Override
@@ -116,6 +118,7 @@ public class NearbyService extends Service {
         @Override
         public void onDisconnected(String endpointId) {
             Log.d(TAG, "Disconnected");
+            checkCompletedHandler.removeCallbacks(checkCompletedRunnable);
             discoveryHandler.removeCallbacks(discoverRunnable);
             advertiserHandler.removeCallbacks(advertiserRunnable);
             discoveryHandler.post(discoverRunnable);
@@ -193,6 +196,7 @@ public class NearbyService extends Service {
                             incomingMsg = (MessageSerializer) new SerializationHelper().deserialize(incoming_bytes);
                             switch (incomingMsg.mode) {
                                 case MessageSerializer.INTEREST_MODE:
+                                    inside_file = false;
                                     sendImageMessages(incomingMsg, endpointId);
                                     lastdeviceEndpoint = incomingMsg.my_macaddress;
                                     break;
@@ -201,11 +205,14 @@ public class NearbyService extends Service {
                                     ArrayList<Messages> tobeUpdated = ChitchatAlgo.getToBeUpdated();
                                     for (Messages msg : tobeUpdated)
                                         GlobalApp.dbHelper.updateMsg(msg);
-                                    Toast.makeText(getApplicationContext(), "File transfer complete!", Toast.LENGTH_SHORT).show();
+                                    updateDBandSetTags(msgUUIDTags);
+                                    Toast.makeText(getApplicationContext(), "File successfully transferred to other device!", Toast.LENGTH_SHORT).show();
                                     checkCompletedHandler.post(checkCompletedRunnable);
                                     break;
                                 case MessageSerializer.FINAL_MODE:
                                     Log.d(TAG, "Inside final mode");
+                                    inside_file = true;
+                                    Toast.makeText(getApplicationContext(), "File transfer complete!", Toast.LENGTH_SHORT).show();
                                     Nearby.getConnectionsClient(getApplicationContext()).disconnectFromEndpoint(endpointId);
                                     advertiserHandler.post(advertiserRunnable);
                                     discoveryHandler.post(discoverRunnable);
@@ -229,6 +236,10 @@ public class NearbyService extends Service {
                 @Override
                 public void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {
                     Log.d(TAG, update.getStatus() + " " + update.getTotalBytes() + " " + update.getBytesTransferred());
+                    if(update.getStatus() == 2 && inside_file != true){
+                        inside_file = false;
+                        Toast.makeText(NearbyService.this, "File transfer failed!", Toast.LENGTH_SHORT).show();
+                    }
                 }
             };
     Handler checkCompletedHandler = new Handler();
@@ -296,8 +307,7 @@ public class NearbyService extends Service {
         int tobeAdded = SharedPreferencesHandler.getIncentive(getApplicationContext(), Setting.INCENTIVE) - incomingMsg.incentive;
         SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.INCENTIVE, tobeAdded);
         UpdateDbandSetImage(received_msgs);
-        HashMap<String, String> msgUUIDTags = incomingMsg.msgUUIDList;
-        updateDBandSetTags(msgUUIDTags);
+        msgUUIDTags = incomingMsg.msgUUIDList;
     }
 
     private void updateDBandSetTags(HashMap<String, String> msgUUIDTags) {
@@ -337,29 +347,6 @@ public class NearbyService extends Service {
     }
 
     private void sendImageMessages(MessageSerializer interestMsg, String endpointId) {
-//        if (isClient == true) {
-//            isClient = false;
-//            boolean flag = false;
-//            for (String endpoints : endpointsConnected) {
-//                if (endpoints.equals(interestMsg.my_macaddress)) {
-//                    flag = true;
-//                    break;
-//                }
-//            }
-//            if (flag) {
-//                Nearby.getConnectionsClient(this).stopAllEndpoints();
-//                advertiserHandler.post(advertiserRunnable);
-//                discoveryHandler.post(discoverRunnable);
-//            } else {
-                secondPhaseTransfer(interestMsg, endpointId);
-//            }
-//        } else
-//            secondPhaseTransfer(interestMsg, endpointId);
-
-
-    }
-
-    private void secondPhaseTransfer(MessageSerializer interestMsg, String endpointId) {
         endpointsConnected.add(interestMsg.my_macaddress);
         lastdeviceEndpoint = interestMsg.my_macaddress;
         new ChitchatAlgo().growthAlgorithm(interestMsg.my_interests, my_interests);
@@ -379,6 +366,7 @@ public class NearbyService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
 
@@ -426,6 +414,7 @@ public class NearbyService extends Service {
                 public void onEndpointLost(String endpointId) {
                     // A previously discovered endpoint has gone away.
                     Log.d(TAG, "Endpoint found lost");
+                    checkCompletedHandler.removeCallbacks(checkCompletedRunnable);
                     discoveryHandler.removeCallbacks(discoverRunnable);
                     advertiserHandler.removeCallbacks(advertiserRunnable);
                     Toast.makeText(NearbyService.this, "Endpoint discovered has been lost", Toast.LENGTH_LONG).show();

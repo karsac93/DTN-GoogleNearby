@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingViewHolder> {
@@ -22,6 +24,7 @@ public TextView mac_address_txt, type_mac, average_mac, quality_text;
 public RatingBar tags_rate, confidence_rate, quality_rate;
 Button save_ratings;
 Context context;
+
 
 
     public RatingsAdapter(List<RatingPOJ> ratingList, RatingsActivity ratingsActivity) {
@@ -36,7 +39,7 @@ Context context;
     }
 
     @Override
-    public void onBindViewHolder(final RatingViewHolder holder, int position) {
+    public void onBindViewHolder(final RatingViewHolder holder, final int position) {
         final RatingPOJ ratingPOJ = ratingList.get(position);
         mac_address_txt.append(ratingPOJ.mac_address);
         type_mac.append(ratingPOJ.type);
@@ -45,6 +48,46 @@ Context context;
             quality_rate.setVisibility(View.GONE);
             quality_text.setVisibility(View.GONE);
         }
+
+        save_ratings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RatingPOJ ratingPOJ = ratingList.get(position);
+                Log.d("RatingAdapter", ratingPOJ.mac_address);
+                View parent_view = (View) view.getParent();
+                RatingBar local_confidence_rate = parent_view.findViewById(R.id.confidence_rate);
+                RatingBar local_tags_rate = parent_view.findViewById(R.id.tags_rate);
+                RatingBar local_quality_rate = parent_view.findViewById(R.id.quality_rate);
+                TextView local_average = parent_view.findViewById(R.id.average_rating);
+                float average;
+                float confi_int = local_confidence_rate.getRating();
+                float tags_int = local_tags_rate.getRating();
+                if(ratingPOJ.type.contains("Source")){
+                    float quality_int = local_quality_rate.getRating();
+                    average = (float) (confi_int + tags_int + quality_int) / 3.0f;
+                    Log.d("RatingAdapter", "Source:" + average);
+                }
+                else{
+                    Log.d("Ratingadap", confi_int + " " +  tags_int );
+                    average = (float) (confi_int + tags_int) / 2.0f;
+                    Log.d("RatingAdapter", "Non Source:" + average);
+                }
+                if(ratingPOJ.average == 0.0f){
+                    ratingPOJ.average = average;
+                    Log.d("RatingAdapter", "Inside 0.0f:" + average);
+                }
+                else{
+                    Log.d("RatingAdapter", "Not inside:" + average);
+                    ratingPOJ.average = (float) (ratingPOJ.average + average) / 2.0f;
+                    Log.d("RatingAdapter", "Source:" + ratingPOJ.average);
+                }
+                Log.d("RatingAdapter", ratingPOJ.average + " --");
+                local_average.setText("Average:" + String.valueOf(ratingPOJ.average));
+                GlobalApp.dbHelper.insertOrUpdateRating(ratingPOJ);
+                Toast.makeText(context, "Ratings updated", Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
 
 
@@ -72,15 +115,14 @@ Context context;
             tags_rate.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
                 @Override
                 public void onRatingChanged(RatingBar ratingBar, float v, boolean b) {
-
-                    tags_rate.setRating(v);
+                    ratingBar.setRating(v);
                 }
             });
 
             confidence_rate.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
                 @Override
                 public void onRatingChanged(RatingBar ratingBar, float v, boolean b) {
-                    confidence_rate.setRating(v);
+                    ratingBar.setRating(v);
                 }
             });
 
@@ -88,41 +130,7 @@ Context context;
             quality_rate.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
                 @Override
                 public void onRatingChanged(RatingBar ratingBar, float v, boolean b) {
-                    quality_rate.setRating(v);
-                }
-            });
-
-            save_ratings.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    RatingPOJ ratingPOJ = ratingList.get(getAdapterPosition());
-                    Log.d("RatingAdapter", ratingPOJ.mac_address);
-                    float average;
-                    float confi_int = confidence_rate.getRating();
-                    float tags_int = tags_rate.getRating();
-                    if(ratingPOJ.type.contains("Source")){
-                        float quality_int = quality_rate.getRating();
-                        average = (float) (confi_int + tags_int + quality_int) / 3.0f;
-                        Log.d("RatingAdapter", "Source:" + average);
-                    }
-                    else{
-                        Log.d("Ratingadap", confi_int + " " +  tags_int );
-                        average = (float) (confi_int + tags_int) / 2.0f;
-                        Log.d("RatingAdapter", "Non Source:" + average);
-                    }
-                    if(ratingPOJ.average == 0.0f){
-                        ratingPOJ.average = average;
-                        Log.d("RatingAdapter", "Inside 0.0f:" + average);
-                    }
-                    else{
-                        Log.d("RatingAdapter", "Not inside 0.0f:" + average);
-                        ratingPOJ.average = (float) (ratingPOJ.average + average) / 2.0f;
-                        Log.d("RatingAdapter", "Source:" + ratingPOJ.average);
-                    }
-                    Log.d("RatingAdapter", ratingPOJ.average + " --");
-                    GlobalApp.dbHelper.insertOrUpdateRating(ratingPOJ);
-                    Toast.makeText(context, "Ratings updated", Toast.LENGTH_SHORT).show();
-
+                    ratingBar.setRating(v);
                 }
             });
         }
