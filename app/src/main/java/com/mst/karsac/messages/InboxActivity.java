@@ -30,32 +30,17 @@ import android.widget.Toast;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import com.google.api.client.extensions.android.json.AndroidJsonFactory;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.services.vision.v1.Vision;
-import com.google.api.services.vision.v1.VisionRequestInitializer;
-import com.google.api.services.vision.v1.model.AnnotateImageRequest;
-import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
-import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
-import com.google.api.services.vision.v1.model.Feature;
-import com.google.api.services.vision.v1.model.Image;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.LocationHandler;
 
-import org.apache.commons.io.IOUtils;
 
 import clarifai2.api.ClarifaiBuilder;
 import clarifai2.api.ClarifaiClient;
@@ -91,7 +76,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inbox);
-        if(Build.VERSION.SDK_INT >= 21){
+        if (Build.VERSION.SDK_INT >= 21) {
             Window window = this.getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -158,17 +143,19 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         if (resultCode != RESULT_CANCELED && requestCode == CHOOSE_FILE_CAM_RESULT_CODE) {
             Log.d("INBOX", "Yeah made it!");
             handleResult(uriSavedImage, image);
+            image = null;
         }
 
     }
 
 
-    private void handleResult(Uri uri, File image) {
+    private void handleResult(Uri uri, File image_local) {
         String img_path;
-        if (image == null)
+        if (image_local == null)
             img_path = getRealPathFromURI(this, uri);
-        else
-            img_path = image.getAbsolutePath();
+        else {
+            img_path = image_local.getAbsolutePath();
+        }
         File file = new File(img_path);
         int type = 0;
         double[] location = new LocationHandler().getLocation(getApplicationContext());
@@ -262,7 +249,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                     }
                 });
             }
-       }
+        }
 
     }
 

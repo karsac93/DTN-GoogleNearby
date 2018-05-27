@@ -11,6 +11,7 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.MessageRatings;
 import com.mst.karsac.ratings.RatingPOJ;
 
 import java.text.ParseException;
@@ -43,6 +44,7 @@ public class DbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(Interest.CREATE_TABLE_INTEREST);
         sqLiteDatabase.execSQL(Messages.CREATE_TABLE_MESSAGE);
         sqLiteDatabase.execSQL(RatingPOJ.CREATE_TABLE_RATING);
+        sqLiteDatabase.execSQL(MessageRatings.CREATE_MESSAGE_RATING_TABLE);
     }
 
     @Override
@@ -317,4 +319,16 @@ public class DbHelper extends SQLiteOpenHelper {
         int id = db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_UUID + "=?", new String[]{msgUUID});
         return id;
     }
+
+    public long insertMessageRating(MessageRatings messageRatings){
+        long id = 0;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MessageRatings.MESSAGE_UNIQUE_ID_COLUMN, messageRatings.getMessage_unique_id());
+        contentValues.put(MessageRatings.INTERMEDIARIES_COLUMN, messageRatings.getIntermediary());
+        contentValues.put(MessageRatings.TAG_RATE_COLUMN, messageRatings.getTag_rate());
+
+        return id;
+    }
+
 }

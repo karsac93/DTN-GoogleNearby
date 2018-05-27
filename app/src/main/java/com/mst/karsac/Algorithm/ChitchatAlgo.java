@@ -232,7 +232,7 @@ public class ChitchatAlgo {
     }
 
     private List<ImageMessage> selectMessagesToSend(List<MessageClassification> messageClassifications, String recevied_mac, Context context) {
-        int incentive_promised = 30 - getRandomNumber();
+        int incentive_promised = 25 - getRandomNumber();
         List<ImageMessage> imageList = new ArrayList<>();
         for (MessageClassification messageClassification : messageClassifications) {
             int temp_incen = incentive_obtained;

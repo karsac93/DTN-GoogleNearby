@@ -59,6 +59,7 @@ public class NearbyService extends Service {
     public static boolean check_start = true;
     public static boolean check_completed = false;
     static String endpointId_last;
+    static long payloadId;
 
     private final ConnectionLifecycleCallback mConnectionLifeCycleCallback = new ConnectionLifecycleCallback() {
         @Override
@@ -94,7 +95,7 @@ public class NearbyService extends Service {
                     Log.d(TAG, "Connection Ok");
                     try {
                         sendInterestData(endpointId);
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
@@ -116,6 +117,7 @@ public class NearbyService extends Service {
         @Override
         public void onDisconnected(String endpointId) {
             Log.d(TAG, "Disconnected");
+            checkCompletedHandler.removeCallbacks(checkCompletedRunnable);
             discoveryHandler.removeCallbacks(discoverRunnable);
             advertiserHandler.removeCallbacks(advertiserRunnable);
             discoveryHandler.post(discoverRunnable);
@@ -125,7 +127,7 @@ public class NearbyService extends Service {
     };
 
 
-    private void sendInterestData(String endpointId) throws IOException {
+    private void sendInterestData(String endpointId){
         MessageSerializer my_messageSerializer;
         Log.d(TAG, "inside SendData method");
         int init_time = SharedPreferencesHandler.getIntPreferences(getApplicationContext(), GlobalApp.TIMESTAMP);
@@ -220,6 +222,7 @@ public class NearbyService extends Service {
                     if (payload.getType() == Payload.Type.STREAM) {
                         Log.d(TAG, "Inside file mode");
                         endpointId_last = endpointId;
+                        payloadId = payload.getId();
                         ReceiveFileRunnable receiveFileRunnable = new ReceiveFileRunnable(payload, incomingMsg, endpointId);
                         Thread thread = new Thread(receiveFileRunnable);
                         thread.start();
@@ -228,7 +231,9 @@ public class NearbyService extends Service {
 
                 @Override
                 public void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {
-                    Log.d(TAG, update.getStatus() + " " + update.getTotalBytes() + " " + update.getBytesTransferred());
+                    if((update.getPayloadId() == payloadId) && (update.getStatus() == PayloadTransferUpdate.Status.FAILURE)){
+                        Toast.makeText(getApplicationContext(), "File failed! Try again!", Toast.LENGTH_SHORT).show();
+                    }
                 }
             };
     Handler checkCompletedHandler = new Handler();
@@ -466,7 +471,7 @@ public class NearbyService extends Service {
         public void run() {
             Log.d(TAG, "Inside Runnable searching");
             Toast.makeText(getApplicationContext(), "Searching!", Toast.LENGTH_SHORT).show();
-            Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_CLUSTER));
+            Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
             discoveryHandler.postDelayed(discoverRunnable, 30000);
         }
     };
@@ -477,7 +482,7 @@ public class NearbyService extends Service {
         public void run() {
             Log.d(TAG, "Inside advertiser runnable");
             Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                    GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_CLUSTER));
+                    GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
             advertiserHandler.postDelayed(advertiserRunnable, 30000);
         }
     };
@@ -487,6 +492,7 @@ public class NearbyService extends Service {
 
     @Override
     public void onCreate() {
+
         advertiserHandler.post(advertiserRunnable);
         discoveryHandler.post(discoverRunnable);
 
@@ -495,14 +501,19 @@ public class NearbyService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        //throw new UnsupportedOperationException("Not yet implemented");
+        return null;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "Inside onDestroy");
+        Nearby.getConnectionsClient(this).stopAllEndpoints();
         discoveryHandler.removeCallbacks(discoverRunnable);
         advertiserHandler.removeCallbacks(advertiserRunnable);
+
+
     }
 
     @Override

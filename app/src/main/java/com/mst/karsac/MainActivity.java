@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
     private AlbumsAdapter adapter;
     private List<Album> albumList;
     FloatingActionButton fab_connect, fab_cancel;
-    TextView textView_status;
 
     public static final String TAG = "MainActivity";
 
@@ -80,11 +79,13 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         fab_connect = findViewById(R.id.fab_advertise);
 
+        final Intent intent = new Intent(MainActivity.this, NearbyService.class);
+
         fab_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(MainActivity.this, "Starting to discover and connect!", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, NearbyService.class));
+                startService(intent);
             }
         });
 
@@ -93,12 +94,10 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
             @Override
             public void onClick(View view) {
                 Toast.makeText(MainActivity.this, "Stopping all the connections!", Toast.LENGTH_SHORT).show();
-                stopService(new Intent(MainActivity.this, NearbyService.class));
+                stopService(intent);
             }
         });
 
-        textView_status = findViewById(R.id.status_txt);
-        textView_status.setText("Device Status: Available");
         albumList = new ArrayList<>();
         adapter = new AlbumsAdapter(this, albumList);
 
@@ -234,6 +233,5 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
 
     @Override
     public void statusListener(String status) {
-        textView_status.setText("Device status:" + status);
     }
 }

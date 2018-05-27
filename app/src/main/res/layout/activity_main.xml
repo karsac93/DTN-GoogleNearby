@@ -54,23 +54,6 @@
                         android:textSize="@dimen/backdrop_title"
                         android:textStyle="italic" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/backdrop_subtitle"
-                        android:textColor="@android:color/white"
-                        android:textSize="@dimen/backdrop_subtitle"
-                        android:textStyle="italic" />
-
-                    <TextView
-                        android:id="@+id/status_txt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@android:color/white"
-                        android:textSize="@dimen/backdrop_subtitle"
-                        android:textStyle="italic"
-                        android:visibility="gone"/>
-
                 </LinearLayout>
             </RelativeLayout>
 
@@ -103,8 +86,8 @@
         android:layout_gravity="top|end"
         android:layout_marginBottom="82dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
         android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         app:layout_anchor="@id/fab_advertise"
         app:layout_anchorGravity="top" />
