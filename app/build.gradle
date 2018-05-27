@@ -10,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
         vectorDrawables.useSupportLibrary = true
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -36,6 +37,11 @@ dependencies {
     implementation 'com.google.android.gms:play-services-nearby:11.8.0'
     implementation 'com.android.support:multidex:1.0.0'
     implementation 'com.clarifai.clarifai-api2:core:2.4.0'
+    implementation 'com.google.api-client:google-api-client-android:1.22.0'
+    implementation 'com.google.apis:google-api-services-vision:v1-rev357-1.22.0'
+    implementation 'com.google.code.findbugs:jsr305:2.0.1'
+    implementation 'commons-io:commons-io:2.5'
+    implementation 'com.android.support:multidex:1.0.3'
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
 

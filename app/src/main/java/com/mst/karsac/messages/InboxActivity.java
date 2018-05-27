@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -19,6 +21,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -26,15 +30,32 @@ import android.widget.Toast;
 
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.services.vision.v1.Vision;
+import com.google.api.services.vision.v1.VisionRequestInitializer;
+import com.google.api.services.vision.v1.model.AnnotateImageRequest;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import com.google.api.services.vision.v1.model.Feature;
+import com.google.api.services.vision.v1.model.Image;
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.Utils.LocationHandler;
+
+import org.apache.commons.io.IOUtils;
 
 import clarifai2.api.ClarifaiBuilder;
 import clarifai2.api.ClarifaiClient;
@@ -70,6 +91,12 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inbox);
+        if(Build.VERSION.SDK_INT >= 21){
+            Window window = this.getWindow();
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+        }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -189,7 +216,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         @Override
         public void run() {
             try {
-                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("ed6cac80a2f048518502923031043fe3")
+                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("bbbcba7dfc1649bfb86309f575e26656")
                         .client(new OkHttpClient()).buildSync();
                 Log.d("hello", "Inside run");
                 activity.runOnUiThread(new Runnable() {
@@ -220,6 +247,13 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                         dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
                 }
             } catch (Exception e) {
+                String tags = "design, illustration";
+                DbHelper dbHelper = GlobalApp.dbHelper;
+                msg.tagsForCurrentImg = tags;
+                GlobalApp.dbHelper.updateMsg(msg);
+                String[] interests = tags.split(",");
+                for (String intrst : interests)
+                    dbHelper.insertInterest(intrst.trim(), 0, 0.5f);
                 e.printStackTrace();
                 activity.runOnUiThread(new Runnable() {
                     public void run() {
@@ -228,7 +262,8 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                     }
                 });
             }
-        }
+       }
+
     }
 
 

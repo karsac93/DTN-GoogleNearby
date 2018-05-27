@@ -166,6 +166,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 interest.setInterest(cursor.getString(cursor.getColumnIndex(Interest.COLUMN_INTEREST)));
                 interest.setTimestamp(cursor.getInt(cursor.getColumnIndex(Interest.COLUMN_TIMESTAMP)));
                 interest.setValue(cursor.getFloat(cursor.getColumnIndex(Interest.INTEREST_VALUE)));
+                interest.setType(type);
                 interestList.add(interest);
             } while (cursor.moveToNext());
         }
