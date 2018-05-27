@@ -96,4 +96,17 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_settings_remote_white_18" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/cancel_connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginBottom="82dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginRight="16dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        app:layout_anchor="@id/fab_advertise"
+        app:layout_anchorGravity="top" />
+
 </android.support.design.widget.CoordinatorLayout>

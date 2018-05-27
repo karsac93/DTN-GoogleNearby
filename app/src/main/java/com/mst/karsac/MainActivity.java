@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.AppBarLayout;
@@ -24,6 +25,8 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +36,7 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.android.gms.nearby.Nearby;
 import com.mst.karsac.NearbySupports.NearbyService;
 import com.mst.karsac.NearbySupports.StatusListener;
 import com.mst.karsac.Settings.Setting;
@@ -46,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
     private RecyclerView recyclerView;
     private AlbumsAdapter adapter;
     private List<Album> albumList;
-    FloatingActionButton fab_connect;
+    FloatingActionButton fab_connect, fab_cancel;
     TextView textView_status;
 
     public static final String TAG = "MainActivity";
@@ -62,6 +66,12 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if(Build.VERSION.SDK_INT >= 21){
+            Window window = this.getWindow();
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+        }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         initCollapsingToolbar();
@@ -75,6 +85,15 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
             public void onClick(View view) {
                 Toast.makeText(MainActivity.this, "Starting to discover and connect!", Toast.LENGTH_SHORT).show();
                 startService(new Intent(MainActivity.this, NearbyService.class));
+            }
+        });
+
+        fab_cancel = findViewById(R.id.cancel_connect);
+        fab_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "Stopping all the connections!", Toast.LENGTH_SHORT).show();
+                stopService(new Intent(MainActivity.this, NearbyService.class));
             }
         });
 

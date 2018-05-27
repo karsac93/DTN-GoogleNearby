@@ -24,6 +24,7 @@ import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.mst.karsac.Algorithm.ChitchatAlgo;
 import com.mst.karsac.GlobalApp;
+import com.mst.karsac.MainActivity;
 import com.mst.karsac.Settings.Setting;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.connections.ImageMessage;
@@ -201,11 +202,12 @@ public class NearbyService extends Service {
                                     ArrayList<Messages> tobeUpdated = ChitchatAlgo.getToBeUpdated();
                                     for (Messages msg : tobeUpdated)
                                         GlobalApp.dbHelper.updateMsg(msg);
-                                    Toast.makeText(getApplicationContext(), "File transfer complete!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "File successfully transferred to other device complete!", Toast.LENGTH_SHORT).show();
                                     checkCompletedHandler.post(checkCompletedRunnable);
                                     break;
                                 case MessageSerializer.FINAL_MODE:
                                     Log.d(TAG, "Inside final mode");
+                                    Toast.makeText(getApplicationContext(), "File transfer complete!", Toast.LENGTH_SHORT).show();
                                     Nearby.getConnectionsClient(getApplicationContext()).disconnectFromEndpoint(endpointId);
                                     advertiserHandler.post(advertiserRunnable);
                                     discoveryHandler.post(discoverRunnable);
@@ -513,8 +515,9 @@ public class NearbyService extends Service {
             advertiserHandler.removeCallbacks(advertiserRunnable);
             discoveryHandler.removeCallbacks(discoverRunnable);
             Nearby.getConnectionsClient(getApplicationContext()).stopAllEndpoints();
-            advertiserHandler.post(advertiserRunnable);
+            Toast.makeText(this, "Restarting all connections!", Toast.LENGTH_SHORT).show();
             discoveryHandler.post(discoverRunnable);
+            advertiserHandler.post(advertiserRunnable);
         }
         check_start = false;
         return START_NOT_STICKY;

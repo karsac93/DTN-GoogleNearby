@@ -81,21 +81,25 @@ public class ChitchatAlgo {
                 if (obtained.getInterest().equals(my_interest.getInterest())) {
                     flag = true;
                     if (obtained.getType() == 0 && my_interest.getType() == 0) {
+                        Log.d(TAG, "Inside type1:" + my_interest.getInterest() + "obtained interest:" + obtained.getInterest() + " obtained type:" + obtained.getType() + " Mytype:" + my_interest.getType());
                         float value = my_interest.getValue() + obtained.getValue();
                         if (value > 1)
                             value = 1;
                         dbHelper.updateInterest(my_interest.getInterest(), value, my_interest.getType());
                     } else if (obtained.getType() == 1 && my_interest.getType() == 0) {
+                        Log.d(TAG, "Inside type2:" + my_interest.getInterest()+ " obtained type:" + obtained.getType() + " Mytype:" + my_interest.getType());
                         float value = my_interest.getValue() + (obtained.getValue() / 2.0f);
                         if (value > 1)
                             value = 1;
                         dbHelper.updateInterest(my_interest.getInterest(), value, my_interest.getType());
                     } else if (obtained.getType() == 0 && my_interest.getType() == 1) {
+                        Log.d(TAG, "Inside type3:" + my_interest.getInterest() + " obtained type:" + obtained.getType() + " Mytype:" + my_interest.getType());
                         float value = my_interest.getValue() + (obtained.getValue() / 3.0f);
                         if (value > 1)
                             value = 1;
                         dbHelper.updateInterest(my_interest.getInterest(), value, my_interest.getType());
-                    } else if (obtained.getType() == 1 && my_interest.getType() == 1) {
+                    } else if (obtained.getType() == 1 && my_interest.getType() == 1 ) {
+                        Log.d(TAG, "Inside type4:" + my_interest.getInterest()+ " obtained type:" + obtained.getType() + " Mytype:" + my_interest.getType());
                         float value = my_interest.getValue() + (obtained.getValue() / 4.0f);
                         if (value > 1)
                             value = 1;
@@ -105,12 +109,14 @@ public class ChitchatAlgo {
             }
             if (flag == false) {
                 if (obtained.getType() == 0) {
+                    Log.d(TAG, "Inside type5:" + obtained.getInterest()+ " obtained type:" + obtained.getType() + " Mytype:" + obtained.getType());
                     float value = obtained.getValue() / 5.0f;
                     if (value > 1)
                         value = 1;
                     obtained.setValue(value);
                     dbHelper.insertInterest(obtained.getInterest(), 1, value);
                 } else if (obtained.getType() == 1) {
+                    Log.d(TAG, "Inside type6:" + obtained.getInterest()+ " obtained type:" + obtained.getType() + " Mytype:" + obtained.getType());
                     float value = obtained.getValue() / 6.0f;
                     if (value > 1)
                         value = 1;
