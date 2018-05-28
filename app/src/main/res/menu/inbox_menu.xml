@@ -8,6 +8,6 @@
         android:title=""
         android:id="@+id/spinner_inbox"
         app:showAsAction="always"
-        app:actionViewClass="android.widget.Spinner"/>
+        app:actionViewClass="android.widget.Spinner" />
 
 </menu>

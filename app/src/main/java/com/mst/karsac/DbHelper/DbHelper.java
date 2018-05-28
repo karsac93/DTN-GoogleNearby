@@ -327,7 +327,9 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(MessageRatings.MESSAGE_UNIQUE_ID_COLUMN, messageRatings.getMessage_unique_id());
         contentValues.put(MessageRatings.INTERMEDIARIES_COLUMN, messageRatings.getIntermediary());
         contentValues.put(MessageRatings.TAG_RATE_COLUMN, messageRatings.getTag_rate());
-
+        contentValues.put(MessageRatings.CONFIDENCE_RATE_COLUMN, messageRatings.getConfidence_rate());
+        contentValues.put(MessageRatings.QUALITY_RATE_COLUMN, messageRatings.getQuality_rate());
+        id = sqLiteDatabase.insert(MessageRatings.MESSAGE_RATING_TABLE, null, contentValues);
         return id;
     }
 

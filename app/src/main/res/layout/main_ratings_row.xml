@@ -48,16 +48,21 @@
             android:text="Rate Tags"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:textColor="@color/colorPrimary" />
-
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
         <RatingBar
             android:isIndicator="false"
             android:id="@+id/tags_rate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:stepSize="1.0"
-            android:rating="2.0"
-            style="?android:attr/ratingBarStyleSmall"/>
+            android:layout_alignParentRight="true"
+            android:stepSize="0.5"
+            android:rating="0.0"
+            style="?android:attr/ratingBarStyle"
+            android:progressTint="@color/colorPrimary"
+            android:secondaryProgressTint="@color/colorPrimary"/>
+        </RelativeLayout>
 
     </LinearLayout>
 
@@ -76,16 +81,22 @@
             android:text="Rate confidence"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:textColor="@color/colorPrimary" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RatingBar
+                android:isIndicator="false"
+                android:rating="0.0"
+                android:stepSize="0.5"
+                android:id="@+id/confidence_rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                style="?android:attr/ratingBarStyle"
+                android:progressTint="@color/colorPrimary"
+                android:secondaryProgressTint="@color/colorPrimary"/>
+        </RelativeLayout>
 
-        <RatingBar
-            android:isIndicator="false"
-            android:rating="2.0"
-            android:stepSize="1.0"
-            android:id="@+id/confidence_rate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            style="?android:attr/ratingBarStyleSmall"/>
 
     </LinearLayout>
 
@@ -100,20 +111,27 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_gravity="center_horizontal"
             android:text="Rate quality"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:textColor="@color/colorPrimary" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <RatingBar
+                android:isIndicator="false"
+                android:rating="0.0"
+                android:stepSize="0.5"
+                android:numStars="5"
+                android:id="@+id/quality_rate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                style="?android:attr/ratingBarStyle"
+                android:progressTint="@color/colorPrimary"
+                android:secondaryProgressTint="@color/colorPrimary"/>
+        </RelativeLayout>
 
-        <RatingBar
-            android:isIndicator="false"
-            android:rating="2.0"
-            android:stepSize="1.0"
-            android:id="@+id/quality_rate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            style="?android:attr/ratingBarStyleSmall"/>
+
     </LinearLayout>
 
     <Button

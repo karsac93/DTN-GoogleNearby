@@ -121,6 +121,21 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                 startActivityForResult(intent, CHOOSE_FILE_CAM_RESULT_CODE);
             }
         });
+
+        msgRecyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(dy > 0 && (fab_gal.getVisibility() == View.VISIBLE && fab_cam.getVisibility() == View.VISIBLE)){
+                    fab_gal.hide();
+                    fab_cam.hide();
+                }
+                else if (dy < 0 && (fab_gal.getVisibility() != View.VISIBLE && fab_cam.getVisibility() != View.VISIBLE )){
+                    fab_gal.show();
+                    fab_cam.show();
+                }
+            }
+        });
     }
 
     @Override
@@ -268,8 +283,8 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
         MenuItem menuItem = menu.findItem(R.id.spinner_inbox);
         Spinner spinner_inbox = (Spinner) menuItem.getActionView();
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.messages_drop, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.messages_drop, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(R.layout.single_spinner_row);
         spinner_inbox.setAdapter(adapter);
         spinner_inbox.setPadding(4, 0, 4, 0);
 
