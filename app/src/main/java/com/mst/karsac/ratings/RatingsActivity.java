@@ -37,6 +37,7 @@ public class RatingsActivity extends AppCompatActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         }
+
         List<RatingPOJ> ratingsObjects = new ArrayList<>();
         if (getIntent().hasExtra("Message")) {
             Messages msg = (Messages) getIntent().getSerializableExtra("Message");

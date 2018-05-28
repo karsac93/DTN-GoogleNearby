@@ -8,29 +8,26 @@ public class MessageRatings {
     public static final String CONFIDENCE_RATE_COLUMN = "confidence_rate";
     public static final String QUALITY_RATE_COLUMN = "quality_rate";
     public static final String INTERMEDIARIES_COLUMN = "intermediaries";
+    public static final String INTERMEDIARY_TYPE = "intermediary_type";
 
     public static final String CREATE_MESSAGE_RATING_TABLE = "CREATE TABLE " + MESSAGE_RATING_TABLE + " ("
             + MESSAGE_UNIQUE_ID_COLUMN + " TEXT," + TAG_RATE_COLUMN + " REAL," +  CONFIDENCE_RATE_COLUMN
-            + " REAL," + QUALITY_RATE_COLUMN + " REAL," + INTERMEDIARIES_COLUMN + " TEXT, PRIMARY KEY (" +
+            + " REAL," + QUALITY_RATE_COLUMN + " REAL," + INTERMEDIARIES_COLUMN + " TEXT," + INTERMEDIARY_TYPE + " TEXT, PRIMARY KEY (" +
             MESSAGE_UNIQUE_ID_COLUMN + ", " + INTERMEDIARIES_COLUMN + "))";
 
     String message_unique_id;
     float tag_rate, confidence_rate, quality_rate;
     String intermediary;
+    String inter_type;
 
-    public MessageRatings(String message_unique_id, float tag_rate, float confidence_rate, String intermediary) {
-        this.message_unique_id = message_unique_id;
-        this.tag_rate = tag_rate;
-        this.confidence_rate = confidence_rate;
-        this.intermediary = intermediary;
-    }
 
-    public MessageRatings(String message_unique_id, float tag_rate, float confidence_rate, float quality_rate, String intermediary) {
+    public MessageRatings(String message_unique_id, float tag_rate, float confidence_rate, float quality_rate, String intermediary, String inter_type) {
         this.message_unique_id = message_unique_id;
         this.tag_rate = tag_rate;
         this.confidence_rate = confidence_rate;
         this.quality_rate = quality_rate;
         this.intermediary = intermediary;
+        this.inter_type = inter_type;
     }
 
     public String getMessage_unique_id() {
@@ -71,5 +68,13 @@ public class MessageRatings {
 
     public void setIntermediary(String intermediary) {
         this.intermediary = intermediary;
+    }
+
+    public String getInter_type() {
+        return inter_type;
+    }
+
+    public void setInter_type(String inter_type) {
+        this.inter_type = inter_type;
     }
 }

@@ -85,7 +85,7 @@ public class DbHelper extends SQLiteOpenHelper {
                     interest1.setTimestamp(cursor.getInt(cursor.getColumnIndex(Interest.COLUMN_TIMESTAMP)));
                     interest1.setValue(cursor.getFloat(cursor.getColumnIndex(Interest.INTEREST_VALUE)));
                     interest1.setType(cursor.getInt(cursor.getColumnIndex(Interest.TYPE)));
-                    Log.d(TAG, "present interest type:"  + interest1.getType() + "insert type:" + type + " interest name:" + interest1.getInterest());
+                    Log.d(TAG, "present interest type:" + interest1.getType() + "insert type:" + type + " interest name:" + interest1.getInterest());
                     if (type != interest1.getType() && type == 0) {
                         Log.d(TAG, "different types!");
                         float val = 0.5f;
@@ -314,13 +314,13 @@ public class DbHelper extends SQLiteOpenHelper {
     public int updateMsgTags(String msgUUID, String tags) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        contentValues.put(Messages.COLUMN_TAGS,tags);
+        contentValues.put(Messages.COLUMN_TAGS, tags);
 
         int id = db.update(Messages.MY_MESSAGE_TABLE_NAME, contentValues, Messages.COLUMN_UUID + "=?", new String[]{msgUUID});
         return id;
     }
 
-    public long insertMessageRating(MessageRatings messageRatings){
+    public long insertMessageRating(MessageRatings messageRatings) {
         long id = 0;
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -329,8 +329,34 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(MessageRatings.TAG_RATE_COLUMN, messageRatings.getTag_rate());
         contentValues.put(MessageRatings.CONFIDENCE_RATE_COLUMN, messageRatings.getConfidence_rate());
         contentValues.put(MessageRatings.QUALITY_RATE_COLUMN, messageRatings.getQuality_rate());
+        contentValues.put(MessageRatings.INTERMEDIARY_TYPE, messageRatings.getInter_type());
         id = sqLiteDatabase.insert(MessageRatings.MESSAGE_RATING_TABLE, null, contentValues);
         return id;
+    }
+
+    public List<MessageRatings> getRatingsMessage(String msgUUID, String intermediary) {
+        List<MessageRatings> messageRatingsList = new ArrayList<>();
+        String selectQuery = "";
+        if (msgUUID != null && intermediary != null)
+            selectQuery = "SELECT * FROM " + MessageRatings.MESSAGE_RATING_TABLE + " WHERE " + MessageRatings.MESSAGE_UNIQUE_ID_COLUMN + "='" + msgUUID + "' AND "
+                    + MessageRatings.INTERMEDIARIES_COLUMN + "'" + intermediary + "'";
+        else
+            selectQuery = "SELECT * FROM " + MessageRatings.MESSAGE_RATING_TABLE;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                String msgUUID_local = cursor.getString(cursor.getColumnIndex(MessageRatings.MESSAGE_UNIQUE_ID_COLUMN));
+                String intermediaries = cursor.getString(cursor.getColumnIndex(MessageRatings.INTERMEDIARIES_COLUMN));
+                float tag_rate = cursor.getFloat(cursor.getColumnIndex(MessageRatings.TAG_RATE_COLUMN));
+                float confidence_rate = cursor.getFloat(cursor.getColumnIndex(MessageRatings.CONFIDENCE_RATE_COLUMN));
+                float quality_rate = cursor.getFloat(cursor.getColumnIndex(MessageRatings.CONFIDENCE_RATE_COLUMN));
+                String inter_type = cursor.getString(cursor.getColumnIndex(MessageRatings.INTERMEDIARY_TYPE));
+                MessageRatings singleMessageRatings = new MessageRatings(msgUUID_local, tag_rate, confidence_rate, quality_rate, intermediaries, inter_type);
+                messageRatingsList.add(singleMessageRatings);
+            } while (cursor.moveToNext());
+        }
+        return messageRatingsList;
     }
 
 }
