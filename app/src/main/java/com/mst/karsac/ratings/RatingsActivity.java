@@ -23,14 +23,16 @@ import java.util.List;
 public class RatingsActivity extends AppCompatActivity {
 
     public static final String TAG = RatingsActivity.class.getSimpleName();
-
+    public static final float NOT_YET_RATED_CODE = 555.55f;
     RecyclerView recyclerView;
     RatingsAdapter ratingsAdapter;
+    Messages msg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ratings);
+
         if(Build.VERSION.SDK_INT >= 21){
             Window window = this.getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -38,46 +40,62 @@ public class RatingsActivity extends AppCompatActivity {
             window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         }
 
-        List<RatingPOJ> ratingsObjects = new ArrayList<>();
+        List<MessageRatings> messageRatingsList = new ArrayList<>();
+
         if (getIntent().hasExtra("Message")) {
-            Messages msg = (Messages) getIntent().getSerializableExtra("Message");
+            msg = (Messages) getIntent().getSerializableExtra("Message");
             Log.d(TAG, "Intermediaries:" + msg.destAddr);
             String[] msg_array = msg.destAddr.split("\\|");
 
+            MessageRatings messageRatings;
+
             for (String mac_addresses : msg_array) {
                 if (!mac_addresses.contains(GlobalApp.source_mac) && !msg.sourceMac.contains(mac_addresses)) {
-                    RatingPOJ ratingPOJ = new RatingPOJ();
-                    ratingPOJ.average = 0.0f;
-                    ratingPOJ.mac_address = mac_addresses;
-                    ratingPOJ.type = "Intermediary";
-                    ratingsObjects.add(ratingPOJ);
+                    messageRatings = new MessageRatings();
+                    messageRatings.setMessage_unique_id(msg.uuid);
+                    messageRatings.setIntermediary(mac_addresses);
+                    messageRatings.setInter_type("Intermediary");
+                    messageRatings.setConfidence_rate(0.0f);
+                    messageRatings.setQuality_rate(0.0f);
+                    messageRatings.setTag_rate(0.0f);
+                    messageRatings.setLocal_average(NOT_YET_RATED_CODE);
+                    messageRatingsList.add(messageRatings);
                 }
                 else{
                     break;
                 }
             }
-            RatingPOJ ratingPOJ = new RatingPOJ();
-            ratingPOJ.mac_address = msg.sourceMac;
-            ratingPOJ.average = 0.0f;
-            ratingPOJ.type = "Source";
-            ratingsObjects.add(ratingPOJ);
+            messageRatings = new MessageRatings();
+            messageRatings.setMessage_unique_id(msg.uuid);
+            messageRatings.setIntermediary(msg.sourceMac);
+            messageRatings.setInter_type("Source");
+            messageRatings.setConfidence_rate(0.0f);
+            messageRatings.setQuality_rate(0.0f);
+            messageRatings.setTag_rate(0.0f);
+            messageRatings.setLocal_average(NOT_YET_RATED_CODE);
+            messageRatingsList.add(messageRatings);
         }
 
-        List<RatingPOJ> rating_fromSql = GlobalApp.dbHelper.getRatings();
-        for (RatingPOJ from_table : rating_fromSql) {
-            for (RatingPOJ from_msg : ratingsObjects) {
-                if (from_msg.mac_address.contains(from_table.mac_address)) {
-                    from_msg.average = from_table.average;
+        List<MessageRatings> rating_fromSql = GlobalApp.dbHelper.getRatingsMessage(msg.uuid, null);
+        for (MessageRatings from_table : rating_fromSql) {
+            for (MessageRatings from_msg : messageRatingsList) {
+                if (from_msg.intermediary.contains(from_table.intermediary)) {
+                    from_msg.local_average = from_table.local_average;
+                    from_msg.tag_rate = from_table.tag_rate;
+                    from_msg.confidence_rate = from_table.confidence_rate;
+                    from_msg.quality_rate = from_table.quality_rate;
                 }
             }
         }
 
-        for (RatingPOJ ratingPOJs : ratingsObjects) {
-            GlobalApp.dbHelper.insertOrUpdateRating(ratingPOJs);
+        for (MessageRatings messageRatings : messageRatingsList) {
+            if(messageRatings.local_average == NOT_YET_RATED_CODE) {
+                GlobalApp.dbHelper.insertMessageRating(messageRatings);
+            }
         }
 
         recyclerView = findViewById(R.id.recycler_rating);
-        ratingsAdapter = new RatingsAdapter(ratingsObjects, this);
+        ratingsAdapter = new RatingsAdapter(messageRatingsList, this);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -86,6 +104,5 @@ public class RatingsActivity extends AppCompatActivity {
         recyclerView.setAdapter(ratingsAdapter);
         ratingsAdapter.notifyDataSetChanged();
     }
-
 }
 

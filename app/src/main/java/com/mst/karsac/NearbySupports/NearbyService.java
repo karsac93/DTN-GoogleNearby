@@ -31,7 +31,6 @@ import com.mst.karsac.connections.MessageSerializer;
 import com.mst.karsac.connections.Mode;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
-import com.mst.karsac.ratings.RatingPOJ;
 
 
 import java.io.ByteArrayInputStream;
@@ -139,8 +138,8 @@ public class NearbyService extends Service {
         my_messageSerializer.msgUUIDList = uuidList;
         my_messageSerializer.incentive = SharedPreferencesHandler.getIncentive(this, Setting.INCENTIVE);
         Log.d(TAG, "Size of decayed interest:@@@" + my_messageSerializer.my_interests.size());
-        List<RatingPOJ> ratingPOJS = GlobalApp.dbHelper.getRatings();
-        my_messageSerializer.ratingPOJList = ratingPOJS;
+        //List<RatingPOJ> ratingPOJS = GlobalApp.dbHelper.getRatings();
+        //my_messageSerializer.ratingPOJList = ratingPOJS;
         String mode_type = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.MODE_SELECTION);
         Mode mode;
         if (mode_type.contains(Setting.PUSH) || mode_type.trim().length() == 0) {
@@ -368,7 +367,7 @@ public class NearbyService extends Service {
         endpointsConnected.add(interestMsg.my_macaddress);
         lastdeviceEndpoint = interestMsg.my_macaddress;
         new ChitchatAlgo().growthAlgorithm(interestMsg.my_interests, my_interests);
-        handleRatings(interestMsg.ratingPOJList);
+        //handleRatings(interestMsg.ratingPOJList);
         MessageSerializer imageTransfer = new ChitchatAlgo().RoutingProtocol
                 (interestMsg.my_interests, my_interests, interestMsg.my_macaddress,
                         interestMsg.mode_type, interestMsg.msgUUIDList, interestMsg.incentive, getApplicationContext());
@@ -387,22 +386,22 @@ public class NearbyService extends Service {
     }
 
 
-    private void handleRatings(List<RatingPOJ> ratingPOJList) {
-        List<RatingPOJ> myPOJList = GlobalApp.dbHelper.getRatings();
-        for (RatingPOJ receivedPoj : ratingPOJList) {
-            for (RatingPOJ myPOJ : myPOJList) {
-                if (receivedPoj.mac_address.contains(myPOJ.mac_address)) {
-                    receivedPoj.average = (receivedPoj.average + myPOJ.average) / 2.0f;
-                    break;
-                }
-            }
-        }
-        for (RatingPOJ receivedPoj : ratingPOJList) {
-            if (!receivedPoj.mac_address.contains(GlobalApp.source_mac)) {
-                GlobalApp.dbHelper.insertOrUpdateRating(receivedPoj);
-            }
-        }
-    }
+//    private void handleRatings(List<RatingPOJ> ratingPOJList) {
+//        List<RatingPOJ> myPOJList = GlobalApp.dbHelper.getRatings();
+//        for (RatingPOJ receivedPoj : ratingPOJList) {
+//            for (RatingPOJ myPOJ : myPOJList) {
+//                if (receivedPoj.mac_address.contains(myPOJ.mac_address)) {
+//                    receivedPoj.average = (receivedPoj.average + myPOJ.average) / 2.0f;
+//                    break;
+//                }
+//            }
+//        }
+//        for (RatingPOJ receivedPoj : ratingPOJList) {
+//            if (!receivedPoj.mac_address.contains(GlobalApp.source_mac)) {
+//                GlobalApp.dbHelper.insertOrUpdateRating(receivedPoj);
+//            }
+//        }
+//    }
 
     private final EndpointDiscoveryCallback mEndpointDiscoveryCallback =
             new EndpointDiscoveryCallback() {

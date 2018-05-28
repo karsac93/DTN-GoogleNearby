@@ -46,6 +46,7 @@
             android:layout_alignParentTop="true"
             android:layout_gravity="center_horizontal"
             android:text="Rate Tags"
+            android:textStyle="bold"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:textColor="@color/colorPrimary" />
         <RelativeLayout
@@ -79,6 +80,7 @@
             android:layout_alignParentTop="true"
             android:layout_gravity="center_horizontal"
             android:text="Rate confidence"
+            android:textStyle="bold"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:textColor="@color/colorPrimary" />
         <RelativeLayout
@@ -113,6 +115,7 @@
             android:layout_alignParentTop="true"
             android:text="Rate quality"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:textStyle="bold"
             android:textColor="@color/colorPrimary" />
         <RelativeLayout
             android:layout_width="match_parent"

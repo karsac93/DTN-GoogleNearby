@@ -32,14 +32,20 @@ import android.widget.Toast;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
+import com.mst.karsac.RatingsActivity.FinalRatings;
 import com.mst.karsac.Utils.LocationHandler;
+import com.mst.karsac.ratings.MessageRatings;
+import com.mst.karsac.ratings.RatingsActivity;
 
 
 import clarifai2.api.ClarifaiBuilder;
@@ -65,6 +71,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
     public static int type;
     Uri uriSavedImage;
     File image;
+    boolean from_ratings = false;
 
     @Override
     protected void onResume() {
@@ -84,16 +91,6 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        msgRecyclerview = findViewById(R.id.recycler_msgs);
-        msgAdapter = new MsgAdapter(this, messagesList);
-
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        msgRecyclerview.setLayoutManager(layoutManager);
-        msgRecyclerview.setItemAnimator(new DefaultItemAnimator());
-        msgRecyclerview.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        msgRecyclerview.setAdapter(msgAdapter);
-        messageDbHelper = GlobalApp.dbHelper;
 
         fab_gal = (FloatingActionButton) findViewById(R.id.fab_gallery);
         fab_gal.setOnClickListener(new View.OnClickListener() {
@@ -122,17 +119,45 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
             }
         });
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            HashMap<String, List<MessageRatings>> ratingsInfo = (HashMap<String, List<MessageRatings>>) extras.get(FinalRatings.FROM_FINAL_RATING);
+            from_ratings = true;
+            fab_gal.setVisibility(View.GONE);
+            fab_cam.setVisibility(View.GONE);
+            Map.Entry<String, List<MessageRatings>> entry = ratingsInfo.entrySet().iterator().next();
+            String key = entry.getKey();
+            Log.d("INBOX", "intermediary key:" + key);
+            List<MessageRatings> ratingsDetail = entry.getValue();
+            for (MessageRatings ratings : ratingsDetail) {
+                Log.d("INBOX", "getting the images");
+                messagesList.add(GlobalApp.dbHelper.getSingleMessage(ratings.getMessage_unique_id()));
+            }
+        }
+        Log.d("INBOX", "No. of images:" + messagesList.size());
+        msgRecyclerview = findViewById(R.id.recycler_msgs);
+        msgAdapter = new MsgAdapter(this, messagesList, from_ratings);
+
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        msgRecyclerview.setLayoutManager(layoutManager);
+        msgRecyclerview.setItemAnimator(new DefaultItemAnimator());
+        msgRecyclerview.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        msgRecyclerview.setAdapter(msgAdapter);
+        msgAdapter.notifyDataSetChanged();
+        messageDbHelper = GlobalApp.dbHelper;
+
         msgRecyclerview.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(dy > 0 && (fab_gal.getVisibility() == View.VISIBLE && fab_cam.getVisibility() == View.VISIBLE)){
-                    fab_gal.hide();
-                    fab_cam.hide();
-                }
-                else if (dy < 0 && (fab_gal.getVisibility() != View.VISIBLE && fab_cam.getVisibility() != View.VISIBLE )){
-                    fab_gal.show();
-                    fab_cam.show();
+                if (from_ratings == false) {
+                    if (dy > 0 && (fab_gal.getVisibility() == View.VISIBLE && fab_cam.getVisibility() == View.VISIBLE)) {
+                        fab_gal.hide();
+                        fab_cam.hide();
+                    } else if (dy < 0 && (fab_gal.getVisibility() != View.VISIBLE && fab_cam.getVisibility() != View.VISIBLE)) {
+                        fab_gal.show();
+                        fab_cam.show();
+                    }
                 }
             }
         });
@@ -185,11 +210,11 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         Log.d("Inbox", "Format:" + format);
         Log.d("Inbox", "Filename:" + fileName);
         String tagsForCurrentImg = "";
-        String uuid = UUID.randomUUID().toString() + GlobalApp.source_mac;
-        Log.d("InboxActivity", uuid);
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String timestamp = String.valueOf(sdf.format(file.lastModified()));
         Log.d("timestamp:", timestamp);
+        String uuid = GlobalApp.source_mac + getCurrentTimestamp();
+        Log.d("InboxActivity", uuid);
         Messages messages = new Messages(uri.toString(), timestamp, tagsForCurrentImg,
                 fileName, format, sourceMac, destAddr, rating, 0, size, lat, lon,
                 0, 0, 0, uuid);
@@ -201,6 +226,21 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         myRunnable runnable = new myRunnable(messages, id, this);
         new Thread(runnable).start();
 
+    }
+
+    private String getCurrentTimestamp() {
+        Calendar now = Calendar.getInstance();
+        int year = now.get(Calendar.YEAR);
+        int month = now.get(Calendar.MONTH) + 1; // Note: zero based!
+        int day = now.get(Calendar.DAY_OF_MONTH);
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        int minute = now.get(Calendar.MINUTE);
+        int second = now.get(Calendar.SECOND);
+        int millis = now.get(Calendar.MILLISECOND);
+        String curTimestamp = String.valueOf(year) + String.valueOf(month) + String.valueOf(day)
+                + String.valueOf(hour) + String.valueOf(minute) + String.valueOf(second) +
+                String.valueOf(millis);
+        return curTimestamp;
     }
 
     class myRunnable implements Runnable {
@@ -270,47 +310,53 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
 
     public void notifyChange(int type) {
-        messagesList.clear();
-        messagesList.addAll(messageDbHelper.getAllMessages(type));
-        Log.d("SIZE", messagesList.size() + " ");
-        msgAdapter.notifyDataSetChanged();
+        if (from_ratings == false) {
+            messagesList.clear();
+            messagesList.addAll(messageDbHelper.getAllMessages(type));
+            Log.d("SIZE", messagesList.size() + " ");
+            msgAdapter.notifyDataSetChanged();
+        }
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.inbox_menu, menu);
 
-        MenuItem menuItem = menu.findItem(R.id.spinner_inbox);
-        Spinner spinner_inbox = (Spinner) menuItem.getActionView();
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.messages_drop, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(R.layout.single_spinner_row);
-        spinner_inbox.setAdapter(adapter);
-        spinner_inbox.setPadding(4, 0, 4, 0);
+        if (from_ratings == false) {
+            getMenuInflater().inflate(R.menu.inbox_menu, menu);
 
-        spinner_inbox.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int selectionNum, long l) {
-                if (selectionNum == 1) {
-                    fab_cam.setVisibility(View.GONE);
-                    fab_gal.setVisibility(View.GONE);
-                    type = 1;
-                    notifyChange(type);
+            MenuItem menuItem = menu.findItem(R.id.spinner_inbox);
+            Spinner spinner_inbox = (Spinner) menuItem.getActionView();
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.messages_drop, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(R.layout.single_spinner_row);
+            spinner_inbox.setAdapter(adapter);
+            spinner_inbox.setPadding(4, 0, 4, 0);
 
-                } else {
-                    fab_gal.setVisibility(View.VISIBLE);
-                    fab_cam.setVisibility(View.VISIBLE);
-                    type = 0;
-                    notifyChange(type);
+            spinner_inbox.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int selectionNum, long l) {
+                    if (selectionNum == 1) {
+                        fab_cam.setVisibility(View.GONE);
+                        fab_gal.setVisibility(View.GONE);
+                        type = 1;
+                        notifyChange(type);
+
+                    } else {
+                        fab_gal.setVisibility(View.VISIBLE);
+                        fab_cam.setVisibility(View.VISIBLE);
+                        type = 0;
+                        notifyChange(type);
+                    }
                 }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {
 
-            }
-        });
-        return true;
+                }
+            });
+            return true;
+        }
+        return false;
     }
 
 

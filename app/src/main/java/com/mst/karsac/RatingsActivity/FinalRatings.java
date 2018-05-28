@@ -1,5 +1,6 @@
 package com.mst.karsac.RatingsActivity;
 
+
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,17 +14,23 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
-import com.mst.karsac.ratings.RatingPOJ;
+import com.mst.karsac.RatingsActivity.FinalRatingsAdapter;
+import com.mst.karsac.ratings.MessageRatings;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class FinalRatings extends AppCompatActivity {
 
+    public static final String FROM_FINAL_RATING = "final_rating";
     RecyclerView final_rating_view;
     FinalRatingsAdapter finalRatingsAdapter;
     TextView default_msg_txt;
+    List<HashMap> ratingsArraylist = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,17 +42,26 @@ public class FinalRatings extends AppCompatActivity {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
         }
+
         final_rating_view = findViewById(R.id.final_ratings);
         default_msg_txt = findViewById(R.id.default_msg);
-        List<RatingPOJ> ratingPOJList = GlobalApp.dbHelper.getRatings();
-        if (ratingPOJList.size() == 0) {
+        List<String> distinctIntermediaries = GlobalApp.dbHelper.getDistinctIntermediaries();
+        if (distinctIntermediaries.size() == 0) {
             default_msg_txt.setVisibility(View.VISIBLE);
             final_rating_view.setVisibility(View.GONE);
         } else {
             default_msg_txt.setVisibility(View.GONE);
             final_rating_view.setVisibility(View.VISIBLE);
         }
-        finalRatingsAdapter = new FinalRatingsAdapter(ratingPOJList);
+
+        for(String inter : distinctIntermediaries){
+            List<MessageRatings> ratings = GlobalApp.dbHelper.getRatingsMessage(null, inter);
+            HashMap<String, List<MessageRatings>> ratingsHashMap = new HashMap<>();
+            ratingsHashMap.put(inter, ratings);
+            ratingsArraylist.add(ratingsHashMap);
+        }
+
+        finalRatingsAdapter = new FinalRatingsAdapter(ratingsArraylist, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         final_rating_view.setLayoutManager(layoutManager);
         final_rating_view.setItemAnimator(new DefaultItemAnimator());

@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,7 +22,7 @@ import com.mst.karsac.R;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
-import com.mst.karsac.ratings.RatingPOJ;
+import com.mst.karsac.ratings.MessageRatings;
 
 public class Setting extends AppCompatActivity {
 
@@ -77,7 +76,7 @@ public class Setting extends AppCompatActivity {
             public void onClick(View view) {
                 GlobalApp.dbHelper.truncate(Messages.MY_MESSAGE_TABLE_NAME);
                 GlobalApp.dbHelper.truncate(Interest.TABLE_NAME_INTEREST);
-                GlobalApp.dbHelper.truncate(RatingPOJ.RATINGS_TABLENAME);
+                GlobalApp.dbHelper.truncate(MessageRatings.MESSAGE_RATING_TABLE);
                 SharedPreferencesHandler.setStringPreferences(getApplicationContext(), Setting.MODE_SELECTION, Setting.PUSH);
                 SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.INCENTIVE, 300);
                 SharedPreferencesHandler.setIntPreference(getApplicationContext(), GlobalApp.TIMESTAMP, 0);

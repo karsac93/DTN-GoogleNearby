@@ -39,11 +39,13 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
     Context mContext;
     List<Messages> messagesList = new ArrayList<>();
     MyListener listener;
+    boolean from_ratings = false;
 
-    public MsgAdapter(Context mContext, List<Messages> messagesList) {
+    public MsgAdapter(Context mContext, List<Messages> messagesList, boolean from_ratings) {
         this.mContext = mContext;
         this.messagesList = messagesList;
         this.listener = (MyListener) mContext;
+        this.from_ratings = from_ratings;
     }
 
     @Override
@@ -55,12 +57,17 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
 
     @Override
     public void onBindViewHolder(final MsgViewHolder holder, int position) {
+        Log.d("MSG ADAP", "Inside BindViewHolder");
         final Messages msg = messagesList.get(position);
         holder.fileName.setText("Filename : " + msg.fileName);
         holder.timestamp.setText("Timestamp : " + msg.timestamp);
 
         if(msg.type == 0){
             holder.rating.setVisibility(View.GONE);
+        }
+
+        if(from_ratings == true){
+            holder.overflow.setVisibility(View.GONE);
         }
 
         holder.rating.setText("Rating : " + String.valueOf(msg.rating));

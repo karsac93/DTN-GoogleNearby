@@ -54,7 +54,7 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.MyViewHold
                             intent = new Intent(mContext, RogerActivity.class);
                             mContext.startActivity(intent);
                             break;
-                        case"Ratings":
+                        case"Device Ratings":
                             intent = new Intent(mContext, FinalRatings.class);
                             mContext.startActivity(intent);
                             break;

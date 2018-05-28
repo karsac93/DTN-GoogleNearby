@@ -12,7 +12,6 @@ import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
 import com.mst.karsac.ratings.MessageRatings;
-import com.mst.karsac.ratings.RatingPOJ;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,7 +42,6 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.d("DbHelper-create", Interest.CREATE_TABLE_INTEREST);
         sqLiteDatabase.execSQL(Interest.CREATE_TABLE_INTEREST);
         sqLiteDatabase.execSQL(Messages.CREATE_TABLE_MESSAGE);
-        sqLiteDatabase.execSQL(RatingPOJ.CREATE_TABLE_RATING);
         sqLiteDatabase.execSQL(MessageRatings.CREATE_MESSAGE_RATING_TABLE);
     }
 
@@ -103,25 +101,6 @@ public class DbHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    public void insertOrUpdateRating(RatingPOJ ratingPOJ) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String selectQuery = "SELECT * FROM " + RatingPOJ.RATINGS_TABLENAME + " WHERE " + RatingPOJ.COLUMN_MAC_ADDRESS + "='" + ratingPOJ.mac_address + "'";
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        int count = cursor.getCount();
-        if (count == 0) {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(RatingPOJ.COLUMN_MAC_ADDRESS, ratingPOJ.mac_address);
-            contentValues.put(RatingPOJ.COLUMN_AVERAGE_RATING, ratingPOJ.average);
-            db.insert(RatingPOJ.RATINGS_TABLENAME, null, contentValues);
-            Log.d(TAG, "Insertion is successful");
-        } else {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(RatingPOJ.COLUMN_AVERAGE_RATING, ratingPOJ.average);
-            db.update(RatingPOJ.RATINGS_TABLENAME, contentValues, RatingPOJ.COLUMN_MAC_ADDRESS + "=?", new String[]{ratingPOJ.mac_address});
-            Log.d(TAG, "Update is successful");
-        }
-
-    }
 
     public HashMap<String, String> getMsgUUID() {
         HashMap<String, String> uuidList = new HashMap<>();
@@ -136,23 +115,6 @@ public class DbHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         return uuidList;
-    }
-
-    public List<RatingPOJ> getRatings() {
-        List<RatingPOJ> ratingsList = new ArrayList<>();
-
-        String selectQuery = "SELECT * FROM " + RatingPOJ.RATINGS_TABLENAME;
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        if (cursor.moveToFirst()) {
-            do {
-                RatingPOJ ratingPOJ = new RatingPOJ();
-                ratingPOJ.mac_address = cursor.getString(cursor.getColumnIndex(RatingPOJ.COLUMN_MAC_ADDRESS));
-                ratingPOJ.average = cursor.getFloat(cursor.getColumnIndex(RatingPOJ.COLUMN_AVERAGE_RATING));
-                ratingsList.add(ratingPOJ);
-            } while (cursor.moveToNext());
-        }
-        return ratingsList;
     }
 
     public List<Interest> getInterests(int type) {
@@ -216,6 +178,37 @@ public class DbHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    public Messages getSingleMessage(String msgUUID){
+        String selectQuery = "SELECT * FROM " + Messages.MY_MESSAGE_TABLE_NAME + " WHERE " + Messages.COLUMN_UUID + "= '" + msgUUID + "'";
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        Messages messages = null;
+        if (cursor.moveToFirst()) {
+            do {
+                String imgPath = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_IMG_PATH));
+                String timestamp = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_TIMESTAMP));
+                String tagsForCurrentImg = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_TAGS));
+                String fileName = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_FILENAME));
+                String format = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_FORMAT));
+                String sourceMac = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_SRCMAC));
+                String destAddr = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_DESTADDR));
+                long size = cursor.getLong(cursor.getColumnIndex(Messages.COLUMN_SIZE));
+                int rating = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_RATING));
+                double lat = cursor.getDouble(cursor.getColumnIndex(Messages.COLUMN_LAT));
+                double lon = cursor.getDouble(cursor.getColumnIndex(Messages.COLUMN_LON));
+                int type_msg = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_TYPE));
+                int id = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_ID));
+                int incetive_paid = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_PAID));
+                int incetive_received = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_RECEIVED));
+                int incetive_promised = cursor.getInt(cursor.getColumnIndex(Messages.COLUMN_PROMISED));
+                String uuid = cursor.getString(cursor.getColumnIndex(Messages.COLUMN_UUID));
+                messages = new Messages(imgPath, timestamp, tagsForCurrentImg, fileName,
+                        format, sourceMac, destAddr, rating, type_msg, size, lat, lon, incetive_paid,
+                        incetive_promised, incetive_received, uuid);
+            } while (cursor.moveToNext());
+        }
+        return messages;
+    }
 
     public List<Messages> getAllMessages(int type) {
         List<Messages> messagesList = new ArrayList<>();
@@ -329,8 +322,23 @@ public class DbHelper extends SQLiteOpenHelper {
         contentValues.put(MessageRatings.TAG_RATE_COLUMN, messageRatings.getTag_rate());
         contentValues.put(MessageRatings.CONFIDENCE_RATE_COLUMN, messageRatings.getConfidence_rate());
         contentValues.put(MessageRatings.QUALITY_RATE_COLUMN, messageRatings.getQuality_rate());
-        contentValues.put(MessageRatings.INTERMEDIARY_TYPE, messageRatings.getInter_type());
+        contentValues.put(MessageRatings.INTERMEDIARY_TYPE_COLUMN, messageRatings.getInter_type());
+        contentValues.put(MessageRatings.LOCAL_AVERAGE_COLUMN, messageRatings.getLocal_average());
         id = sqLiteDatabase.insert(MessageRatings.MESSAGE_RATING_TABLE, null, contentValues);
+        return id;
+    }
+
+    public int updateRatings(MessageRatings messageRatings){
+        SQLiteDatabase db = this.getReadableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MessageRatings.TAG_RATE_COLUMN, messageRatings.getTag_rate());
+        contentValues.put(MessageRatings.CONFIDENCE_RATE_COLUMN, messageRatings.getConfidence_rate());
+        contentValues.put(MessageRatings.QUALITY_RATE_COLUMN, messageRatings.getQuality_rate());
+        contentValues.put(MessageRatings.INTERMEDIARY_TYPE_COLUMN, messageRatings.getInter_type());
+        contentValues.put(MessageRatings.LOCAL_AVERAGE_COLUMN, messageRatings.getLocal_average());
+        int id = db.update(MessageRatings.MESSAGE_RATING_TABLE, contentValues,
+                MessageRatings.MESSAGE_UNIQUE_ID_COLUMN + "=? AND " + MessageRatings.INTERMEDIARIES_COLUMN +
+        "=?", new String[]{messageRatings.getMessage_unique_id(), messageRatings.getIntermediary()});
         return id;
     }
 
@@ -340,8 +348,12 @@ public class DbHelper extends SQLiteOpenHelper {
         if (msgUUID != null && intermediary != null)
             selectQuery = "SELECT * FROM " + MessageRatings.MESSAGE_RATING_TABLE + " WHERE " + MessageRatings.MESSAGE_UNIQUE_ID_COLUMN + "='" + msgUUID + "' AND "
                     + MessageRatings.INTERMEDIARIES_COLUMN + "'" + intermediary + "'";
-        else
+        else if (msgUUID != null && intermediary == null)
+            selectQuery = "SELECT * FROM " + MessageRatings.MESSAGE_RATING_TABLE + " WHERE " + MessageRatings.MESSAGE_UNIQUE_ID_COLUMN + "='" + msgUUID + "'";
+        else if (msgUUID == null && intermediary == null)
             selectQuery = "SELECT * FROM " + MessageRatings.MESSAGE_RATING_TABLE;
+        else if (msgUUID == null && intermediary != null)
+            selectQuery = "SELECT * FROM " + MessageRatings.MESSAGE_RATING_TABLE + " WHERE " + MessageRatings.INTERMEDIARIES_COLUMN + "='" + intermediary + "'";;
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
         if (cursor.moveToFirst()) {
@@ -351,12 +363,28 @@ public class DbHelper extends SQLiteOpenHelper {
                 float tag_rate = cursor.getFloat(cursor.getColumnIndex(MessageRatings.TAG_RATE_COLUMN));
                 float confidence_rate = cursor.getFloat(cursor.getColumnIndex(MessageRatings.CONFIDENCE_RATE_COLUMN));
                 float quality_rate = cursor.getFloat(cursor.getColumnIndex(MessageRatings.CONFIDENCE_RATE_COLUMN));
-                String inter_type = cursor.getString(cursor.getColumnIndex(MessageRatings.INTERMEDIARY_TYPE));
-                MessageRatings singleMessageRatings = new MessageRatings(msgUUID_local, tag_rate, confidence_rate, quality_rate, intermediaries, inter_type);
+                String inter_type = cursor.getString(cursor.getColumnIndex(MessageRatings.INTERMEDIARY_TYPE_COLUMN));
+                float local_average = cursor.getFloat(cursor.getColumnIndex(MessageRatings.LOCAL_AVERAGE_COLUMN));
+                MessageRatings singleMessageRatings = new MessageRatings(msgUUID_local, tag_rate,
+                        confidence_rate, quality_rate, intermediaries, inter_type, local_average);
                 messageRatingsList.add(singleMessageRatings);
             } while (cursor.moveToNext());
         }
         return messageRatingsList;
+    }
+
+    public List<String> getDistinctIntermediaries(){
+        List<String> distinctInter = new ArrayList<>();
+        String selectQuery = "SELECT DISTINCT " + MessageRatings.INTERMEDIARIES_COLUMN + " FROM " + MessageRatings.MESSAGE_RATING_TABLE;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        if(cursor.moveToFirst()){
+            do{
+                String intermediary = cursor.getString(cursor.getColumnIndex(MessageRatings.INTERMEDIARIES_COLUMN));
+                distinctInter.add(intermediary);
+            }while(cursor.moveToNext());
+        }
+        return distinctInter;
     }
 
 }

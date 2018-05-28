@@ -19,7 +19,7 @@ import org.w3c.dom.Text;
 import java.util.List;
 
 public class RatingsAdapter extends RecyclerView.Adapter<RatingsAdapter.RatingViewHolder> {
-private List<RatingPOJ> ratingList;
+private List<MessageRatings> ratingList;
 public TextView mac_address_txt, type_mac, average_mac, quality_text;
 public RatingBar tags_rate, confidence_rate, quality_rate;
 Button save_ratings;
@@ -27,7 +27,7 @@ Context context;
 
 
 
-    public RatingsAdapter(List<RatingPOJ> ratingList, RatingsActivity ratingsActivity) {
+    public RatingsAdapter(List<MessageRatings> ratingList, RatingsActivity ratingsActivity) {
         this.ratingList = ratingList;
         context = ratingsActivity;
     }
@@ -40,20 +40,27 @@ Context context;
 
     @Override
     public void onBindViewHolder(final RatingViewHolder holder, final int position) {
-        final RatingPOJ ratingPOJ = ratingList.get(position);
-        mac_address_txt.append(ratingPOJ.mac_address);
-        type_mac.append(ratingPOJ.type);
-        average_mac.append(String.valueOf(ratingPOJ.average));
-        if(!ratingPOJ.type.contains("Source")){
+        final MessageRatings messageRatings = ratingList.get(position);
+        mac_address_txt.append(" " +messageRatings.intermediary);
+        type_mac.append(" " + messageRatings.getInter_type());
+        if(messageRatings.local_average == RatingsActivity.NOT_YET_RATED_CODE)
+            average_mac.append("Not yet rated!");
+        else
+            average_mac.append(String.valueOf(messageRatings.local_average));
+        if(!messageRatings.inter_type.contains("Source")){
             quality_rate.setVisibility(View.GONE);
             quality_text.setVisibility(View.GONE);
         }
 
+        tags_rate.setRating(messageRatings.tag_rate);
+        confidence_rate.setRating(messageRatings.confidence_rate);
+        quality_rate.setRating(messageRatings.quality_rate);
+
         save_ratings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                RatingPOJ ratingPOJ = ratingList.get(position);
-                Log.d("RatingAdapter", ratingPOJ.mac_address);
+                MessageRatings ratings = ratingList.get(position);
+                Log.d("RatingAdapter", ratings.intermediary);
                 View parent_view = (View) view.getParent();
                 RatingBar local_confidence_rate = parent_view.findViewById(R.id.confidence_rate);
                 RatingBar local_tags_rate = parent_view.findViewById(R.id.tags_rate);
@@ -62,8 +69,9 @@ Context context;
                 float average;
                 float confi_int = local_confidence_rate.getRating();
                 float tags_int = local_tags_rate.getRating();
-                if(ratingPOJ.type.contains("Source")){
-                    float quality_int = local_quality_rate.getRating();
+                float quality_int = 0.0f;
+                if(messageRatings.inter_type.contains("Source")){
+                    quality_int = local_quality_rate.getRating();
                     average = (float) (confi_int + tags_int + quality_int) / 3.0f;
                     Log.d("RatingAdapter", "Source:" + average);
                 }
@@ -72,18 +80,12 @@ Context context;
                     average = (float) (confi_int + tags_int) / 2.0f;
                     Log.d("RatingAdapter", "Non Source:" + average);
                 }
-                if(ratingPOJ.average == 0.0f){
-                    ratingPOJ.average = average;
-                    Log.d("RatingAdapter", "Inside 0.0f:" + average);
-                }
-                else{
-                    Log.d("RatingAdapter", "Not inside:" + average);
-                    ratingPOJ.average = (float) (ratingPOJ.average + average) / 2.0f;
-                    Log.d("RatingAdapter", "Source:" + ratingPOJ.average);
-                }
-                Log.d("RatingAdapter", ratingPOJ.average + " --");
-                local_average.setText("Average:" + String.valueOf(ratingPOJ.average));
-                GlobalApp.dbHelper.insertOrUpdateRating(ratingPOJ);
+                ratings.setTag_rate(tags_int);
+                ratings.setConfidence_rate(confi_int);
+                ratings.setQuality_rate(quality_int);
+                ratings.setLocal_average(average);
+                GlobalApp.dbHelper.updateRatings(ratings);
+                local_average.setText("Average: " + String.valueOf(average));
                 Toast.makeText(context, "Ratings updated", Toast.LENGTH_SHORT).show();
 
             }

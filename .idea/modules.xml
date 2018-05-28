@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/DTN-cardview.iml" filepath="$PROJECT_DIR$/DTN-cardview.iml" />
       <module fileurl="file://$PROJECT_DIR$/P2P.iml" filepath="$PROJECT_DIR$/P2P.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../../home/Desktop/DTN-cardview/P2P.iml" filepath="$PROJECT_DIR$/../../../home/Desktop/DTN-cardview/P2P.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -218,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         a = new Album("Send to IP", covers[2]);
         albumList.add(a);
 
-        a = new Album("Ratings", covers[3]);
+        a = new Album("Device Ratings", covers[3]);
         albumList.add(a);
 
 
