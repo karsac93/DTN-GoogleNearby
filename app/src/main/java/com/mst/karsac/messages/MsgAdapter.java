@@ -50,29 +50,31 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
 
     @Override
     public MsgViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-        View view = layoutInflater.inflate(R.layout.msg_single_row, null);
-        return new MsgViewHolder(view);
+            LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+            View view = layoutInflater.inflate(R.layout.msg_single_row, null);
+            return new MsgViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final MsgViewHolder holder, int position) {
         Log.d("MSG ADAP", "Inside BindViewHolder");
         final Messages msg = messagesList.get(position);
-        holder.fileName.setText("Filename : " + msg.fileName);
-        holder.timestamp.setText("Timestamp : " + msg.timestamp);
+        if (msg != null) {
+            holder.fileName.setText("Filename : " + msg.fileName);
+            holder.timestamp.setText("Timestamp : " + msg.timestamp);
 
-        if(msg.type == 0){
-            holder.rating.setVisibility(View.GONE);
+            if (msg.type == 0) {
+                holder.rating.setVisibility(View.GONE);
+            }
+
+            if (from_ratings == true) {
+                holder.overflow.setVisibility(View.GONE);
+            }
+
+            holder.rating.setText("Rating : " + String.valueOf(msg.rating));
+
+            Glide.with(mContext).load(new File(msg.imgPath).toString()).into(holder.thumbnail);
         }
-
-        if(from_ratings == true){
-            holder.overflow.setVisibility(View.GONE);
-        }
-
-        holder.rating.setText("Rating : " + String.valueOf(msg.rating));
-
-        Glide.with(mContext).load(new File(msg.imgPath).toString()).into(holder.thumbnail);
 
         holder.relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,7 +96,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                 MenuInflater menuInflater = popupMenu.getMenuInflater();
                 menuInflater.inflate(R.menu.popup_menu, popupMenu.getMenu());
                 Menu menu = popupMenu.getMenu();
-                if(msg.type == 1)
+                if (msg.type == 1)
                     menu.findItem(R.id.rate).setVisible(true);
                 else
                     menu.findItem(R.id.rate).setVisible(false);
@@ -149,7 +151,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
         return messagesList.size();
     }
 
-    public class MsgViewHolder extends RecyclerView.ViewHolder{
+    public class MsgViewHolder extends RecyclerView.ViewHolder {
         public TextView fileName, timestamp, rating;
         public ImageView thumbnail, overflow;
         public RelativeLayout relativeLayout;

@@ -134,8 +134,13 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
                 messagesList.add(GlobalApp.dbHelper.getSingleMessage(ratings.getMessage_unique_id()));
             }
         }
-        Log.d("INBOX", "No. of images:" + messagesList.size());
         msgRecyclerview = findViewById(R.id.recycler_msgs);
+        if(from_ratings == false){
+            if(messagesList.size() == 0)
+                msgRecyclerview.setVisibility(View.GONE);
+        }
+        Log.d("INBOX", "No. of images:" + messagesList.size());
+
         msgAdapter = new MsgAdapter(this, messagesList, from_ratings);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
