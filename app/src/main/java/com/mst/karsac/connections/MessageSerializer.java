@@ -2,6 +2,7 @@ package com.mst.karsac.connections;
 
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.interest.Interest;
+import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 
 import java.io.Serializable;
@@ -19,9 +20,9 @@ public class MessageSerializer implements Serializable {
     public String mode;
     public String my_macaddress;
     public Mode mode_type;
-    public List<MessageRatings> ratingPOJList;
     public HashMap<String, String> msgUUIDList;
     public int incentive;
+    public List<DeviceRating> deviceRatingList;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
         this.my_interests = my_interests;
@@ -39,6 +40,4 @@ public class MessageSerializer implements Serializable {
         this.mode = mode;
     }
 
-    public MessageSerializer() {
-    }
 }

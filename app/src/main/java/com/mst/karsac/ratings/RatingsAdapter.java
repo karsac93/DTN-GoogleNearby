@@ -85,11 +85,17 @@ Context context;
                 ratings.setQuality_rate(quality_int);
                 ratings.setLocal_average(average);
                 GlobalApp.dbHelper.updateRatings(ratings);
+                setDeviceRatings(ratings.intermediary, average);
                 local_average.setText("Average: " + String.valueOf(average));
                 Toast.makeText(context, "Ratings updated", Toast.LENGTH_SHORT).show();
 
             }
         });
+    }
+
+    private void setDeviceRatings(String intermediary, float average) {
+        DeviceRating deviceRating = new DeviceRating(intermediary, average);
+        GlobalApp.dbHelper.insertOrUpdateDeviceRatings(deviceRating);
     }
 
 

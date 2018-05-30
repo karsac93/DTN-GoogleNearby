@@ -22,6 +22,7 @@ import com.mst.karsac.R;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 
 public class Setting extends AppCompatActivity {
@@ -77,6 +78,7 @@ public class Setting extends AppCompatActivity {
                 GlobalApp.dbHelper.truncate(Messages.MY_MESSAGE_TABLE_NAME);
                 GlobalApp.dbHelper.truncate(Interest.TABLE_NAME_INTEREST);
                 GlobalApp.dbHelper.truncate(MessageRatings.MESSAGE_RATING_TABLE);
+                GlobalApp.dbHelper.truncate(DeviceRating.DEVICE_RATING_TABLE);
                 SharedPreferencesHandler.setStringPreferences(getApplicationContext(), Setting.MODE_SELECTION, Setting.PUSH);
                 SharedPreferencesHandler.setIntPreference(getApplicationContext(), Setting.INCENTIVE, 300);
                 SharedPreferencesHandler.setIntPreference(getApplicationContext(), GlobalApp.TIMESTAMP, 0);

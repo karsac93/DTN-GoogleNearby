@@ -11,6 +11,7 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 
 import java.text.ParseException;
@@ -43,6 +44,7 @@ public class DbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(Interest.CREATE_TABLE_INTEREST);
         sqLiteDatabase.execSQL(Messages.CREATE_TABLE_MESSAGE);
         sqLiteDatabase.execSQL(MessageRatings.CREATE_MESSAGE_RATING_TABLE);
+        sqLiteDatabase.execSQL(DeviceRating.CREATE_DEVICE_RATING_TABLE);
     }
 
     @Override
@@ -385,6 +387,60 @@ public class DbHelper extends SQLiteOpenHelper {
             }while(cursor.moveToNext());
         }
         return distinctInter;
+    }
+
+    public void deleteMessageRatings(String msgUUID){
+        Log.d("DELETE msg Ratings", msgUUID);
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(MessageRatings.MESSAGE_RATING_TABLE, MessageRatings.MESSAGE_UNIQUE_ID_COLUMN + "=?", new String[]{msgUUID});
+    }
+
+    public DeviceRating getDeviceRating(String deviceUUID){
+        String selectQuery = "SELECT * FROM " + DeviceRating.DEVICE_RATING_TABLE + " WHERE " + DeviceRating.DEVICE_UUID_COLUMN + " ='" + deviceUUID + "'";
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        DeviceRating deviceRating = null;
+        if(cursor.moveToFirst()){
+            do{
+                String deviceId = cursor.getString(cursor.getColumnIndex(DeviceRating.DEVICE_UUID_COLUMN));
+                float device_average = cursor.getFloat(cursor.getColumnIndex(DeviceRating.DEVICE_AVERAGE));
+                deviceRating = new DeviceRating(deviceId, device_average);
+            }while(cursor.moveToNext());
+        }
+        return deviceRating;
+    }
+
+    public List<DeviceRating> getAllDeviceRatings(){
+        List<DeviceRating> deviceRatingList = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + DeviceRating.DEVICE_RATING_TABLE;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        DeviceRating deviceRating = null;
+        if(cursor.moveToFirst()){
+            do{
+                String deviceId = cursor.getString(cursor.getColumnIndex(DeviceRating.DEVICE_UUID_COLUMN));
+                float device_average = cursor.getFloat(cursor.getColumnIndex(DeviceRating.DEVICE_AVERAGE));
+                deviceRating = new DeviceRating(deviceId, device_average);
+                deviceRatingList.add(deviceRating);
+            }while(cursor.moveToNext());
+        }
+        return deviceRatingList;
+    }
+
+    public void insertOrUpdateDeviceRatings(DeviceRating deviceRating){
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DeviceRating.DEVICE_UUID_COLUMN, deviceRating.getDevice_uuid());
+        contentValues.put(DeviceRating.DEVICE_AVERAGE, deviceRating.getDevice_average());
+        DeviceRating check_present = getDeviceRating(deviceRating.getDevice_uuid());
+        if(check_present == null){
+            sqLiteDatabase.insert(DeviceRating.DEVICE_RATING_TABLE, null, contentValues);
+        }
+        else{
+            float average = (check_present.getDevice_average() + deviceRating.getDevice_average()) / 2.0f;
+            contentValues.put(DeviceRating.DEVICE_AVERAGE, average);
+            sqLiteDatabase.update(DeviceRating.DEVICE_RATING_TABLE, contentValues, DeviceRating.DEVICE_UUID_COLUMN + "=?", new String[]{deviceRating.getDevice_uuid()});
+        }
     }
 
 }

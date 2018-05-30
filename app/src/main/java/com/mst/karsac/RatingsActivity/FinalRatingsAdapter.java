@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.mst.karsac.R;
 import com.mst.karsac.messages.InboxActivity;
+import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 
 import java.util.HashMap;
@@ -20,11 +21,11 @@ import java.util.Map;
 
 public class FinalRatingsAdapter extends RecyclerView.Adapter<FinalRatingsAdapter.RatingsViewHolder> {
 
-    private List<HashMap> finalRatingsList;
+    private List<DeviceRating> deviceRatingList;
     Context context;
 
-    public FinalRatingsAdapter(List<HashMap> finalRatingsList, Context context) {
-        this.finalRatingsList = finalRatingsList;
+    public FinalRatingsAdapter(List<DeviceRating> finalRatingsList, Context context) {
+        this.deviceRatingList = finalRatingsList;
         this.context = context;
     }
 
@@ -36,25 +37,15 @@ public class FinalRatingsAdapter extends RecyclerView.Adapter<FinalRatingsAdapte
 
     @Override
     public void onBindViewHolder(RatingsViewHolder holder, int position) {
-        final HashMap<String, List<MessageRatings>> singleRating = finalRatingsList.get(position);
-        Map.Entry<String, List<MessageRatings>> entry = singleRating.entrySet().iterator().next();
-        String key = entry.getKey();
-        List<MessageRatings> value = entry.getValue();
-        holder.unique_txt.setText("Unique_id: " + key);
-        int i = 0;
-        float average = 0.0f;
-        for(MessageRatings messageRatings : value){
-            i = i+1;
-            average = average + messageRatings.getLocal_average();
-        }
-        average = average/i;
-        holder.avg_rating_txt.setText("Average rating: " + String.valueOf(average));
+        final DeviceRating deviceRating = deviceRatingList.get(position);
+        holder.unique_txt.setText("Unique device id: " + deviceRating.getDevice_uuid());
+        holder.avg_rating_txt.setText("Average rating: " + String.valueOf(deviceRating.getDevice_average()));
         holder.linear_finalRatings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, InboxActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putSerializable(FinalRatings.FROM_FINAL_RATING, singleRating);
+                bundle.putSerializable(FinalRatings.FROM_FINAL_RATING, deviceRating);
                 intent.putExtras(bundle);
                 context.startActivity(intent);
             }
@@ -65,7 +56,7 @@ public class FinalRatingsAdapter extends RecyclerView.Adapter<FinalRatingsAdapte
     @Override
     public int getItemCount() {
 
-        return finalRatingsList.size();
+        return deviceRatingList.size();
     }
 
     public class RatingsViewHolder extends RecyclerView.ViewHolder{

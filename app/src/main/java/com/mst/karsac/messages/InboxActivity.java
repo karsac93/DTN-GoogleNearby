@@ -44,6 +44,7 @@ import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.RatingsActivity.FinalRatings;
 import com.mst.karsac.Utils.LocationHandler;
+import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 import com.mst.karsac.ratings.RatingsActivity;
 
@@ -121,24 +122,17 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            HashMap<String, List<MessageRatings>> ratingsInfo = (HashMap<String, List<MessageRatings>>) extras.get(FinalRatings.FROM_FINAL_RATING);
+            DeviceRating deviceRating = (DeviceRating) extras.get(FinalRatings.FROM_FINAL_RATING);
             from_ratings = true;
             fab_gal.setVisibility(View.GONE);
             fab_cam.setVisibility(View.GONE);
-            Map.Entry<String, List<MessageRatings>> entry = ratingsInfo.entrySet().iterator().next();
-            String key = entry.getKey();
-            Log.d("INBOX", "intermediary key:" + key);
-            List<MessageRatings> ratingsDetail = entry.getValue();
-            for (MessageRatings ratings : ratingsDetail) {
+            List<MessageRatings> messageRatingsList = GlobalApp.dbHelper.getRatingsMessage(null, deviceRating.getDevice_uuid());
+            for (MessageRatings ratings : messageRatingsList) {
                 Log.d("INBOX", "getting the images");
                 messagesList.add(GlobalApp.dbHelper.getSingleMessage(ratings.getMessage_unique_id()));
             }
         }
         msgRecyclerview = findViewById(R.id.recycler_msgs);
-        if(from_ratings == false){
-            if(messagesList.size() == 0)
-                msgRecyclerview.setVisibility(View.GONE);
-        }
         Log.d("INBOX", "No. of images:" + messagesList.size());
 
         msgAdapter = new MsgAdapter(this, messagesList, from_ratings);
@@ -263,7 +257,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         @Override
         public void run() {
             try {
-                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("bbbcba7dfc1649bfb86309f575e26656")
+                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("ffbca20f1d054a20a223c49c7d4ac4d7")
                         .client(new OkHttpClient()).buildSync();
                 Log.d("hello", "Inside run");
                 activity.runOnUiThread(new Runnable() {

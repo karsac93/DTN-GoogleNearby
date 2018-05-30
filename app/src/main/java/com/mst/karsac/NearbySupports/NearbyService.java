@@ -31,6 +31,8 @@ import com.mst.karsac.connections.MessageSerializer;
 import com.mst.karsac.connections.Mode;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.DeviceRating;
+import com.mst.karsac.ratings.MessageRatings;
 
 
 import java.io.ByteArrayInputStream;
@@ -126,7 +128,7 @@ public class NearbyService extends Service {
     };
 
 
-    private void sendInterestData(String endpointId){
+    private void sendInterestData(String endpointId) {
         MessageSerializer my_messageSerializer;
         Log.d(TAG, "inside SendData method");
         int init_time = SharedPreferencesHandler.getIntPreferences(getApplicationContext(), GlobalApp.TIMESTAMP);
@@ -137,9 +139,8 @@ public class NearbyService extends Service {
         my_messageSerializer = new MessageSerializer(my_interests, MessageSerializer.INTEREST_MODE);
         my_messageSerializer.msgUUIDList = uuidList;
         my_messageSerializer.incentive = SharedPreferencesHandler.getIncentive(this, Setting.INCENTIVE);
+        my_messageSerializer.deviceRatingList = GlobalApp.dbHelper.getAllDeviceRatings();
         Log.d(TAG, "Size of decayed interest:@@@" + my_messageSerializer.my_interests.size());
-        //List<RatingPOJ> ratingPOJS = GlobalApp.dbHelper.getRatings();
-        //my_messageSerializer.ratingPOJList = ratingPOJS;
         String mode_type = SharedPreferencesHandler.getStringPreferences(getApplicationContext(), Setting.MODE_SELECTION);
         Mode mode;
         if (mode_type.contains(Setting.PUSH) || mode_type.trim().length() == 0) {
@@ -230,7 +231,7 @@ public class NearbyService extends Service {
 
                 @Override
                 public void onPayloadTransferUpdate(String endpointId, PayloadTransferUpdate update) {
-                    if((update.getPayloadId() == payloadId) && (update.getStatus() == PayloadTransferUpdate.Status.FAILURE)){
+                    if ((update.getPayloadId() == payloadId) && (update.getStatus() == PayloadTransferUpdate.Status.FAILURE)) {
                         Toast.makeText(getApplicationContext(), "File failed! Try again!", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -250,8 +251,7 @@ public class NearbyService extends Service {
                     e.printStackTrace();
                 }
                 sendPayload(endpointId_last, bytes);
-            }
-            else{
+            } else {
                 Log.d(TAG, "Waiting to receive files");
                 checkCompletedHandler.postDelayed(checkCompletedRunnable, 1000);
             }
@@ -324,6 +324,8 @@ public class NearbyService extends Service {
             img_msg.imgPath = image.getAbsolutePath();
             img_msg.type = 1;
             GlobalApp.dbHelper.insertImageRecord(img_msg);
+            List<MessageRatings> messageRatingsList = imageMessage.messageRatings;
+            handleRatings(messageRatingsList);
         }
     }
 
@@ -341,33 +343,10 @@ public class NearbyService extends Service {
     }
 
     private void sendImageMessages(MessageSerializer interestMsg, String endpointId) {
-//        if (isClient == true) {
-//            isClient = false;
-//            boolean flag = false;
-//            for (String endpoints : endpointsConnected) {
-//                if (endpoints.equals(interestMsg.my_macaddress)) {
-//                    flag = true;
-//                    break;
-//                }
-//            }
-//            if (flag) {
-//                Nearby.getConnectionsClient(this).stopAllEndpoints();
-//                advertiserHandler.post(advertiserRunnable);
-//                discoveryHandler.post(discoverRunnable);
-//            } else {
-                secondPhaseTransfer(interestMsg, endpointId);
-//            }
-//        } else
-//            secondPhaseTransfer(interestMsg, endpointId);
-
-
-    }
-
-    private void secondPhaseTransfer(MessageSerializer interestMsg, String endpointId) {
         endpointsConnected.add(interestMsg.my_macaddress);
         lastdeviceEndpoint = interestMsg.my_macaddress;
         new ChitchatAlgo().growthAlgorithm(interestMsg.my_interests, my_interests);
-        //handleRatings(interestMsg.ratingPOJList);
+        handleDeviceRatings(interestMsg.deviceRatingList);
         MessageSerializer imageTransfer = new ChitchatAlgo().RoutingProtocol
                 (interestMsg.my_interests, my_interests, interestMsg.my_macaddress,
                         interestMsg.mode_type, interestMsg.msgUUIDList, interestMsg.incentive, getApplicationContext());
@@ -383,25 +362,23 @@ public class NearbyService extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void handleDeviceRatings(List<DeviceRating> deviceRatingList) {
+        for (DeviceRating deviceRating : deviceRatingList) {
+            if (!deviceRating.getDevice_uuid().contains(GlobalApp.source_mac)) {
+                GlobalApp.dbHelper.insertOrUpdateDeviceRatings(deviceRating);
+            }
+        }
     }
 
 
-//    private void handleRatings(List<RatingPOJ> ratingPOJList) {
-//        List<RatingPOJ> myPOJList = GlobalApp.dbHelper.getRatings();
-//        for (RatingPOJ receivedPoj : ratingPOJList) {
-//            for (RatingPOJ myPOJ : myPOJList) {
-//                if (receivedPoj.mac_address.contains(myPOJ.mac_address)) {
-//                    receivedPoj.average = (receivedPoj.average + myPOJ.average) / 2.0f;
-//                    break;
-//                }
-//            }
-//        }
-//        for (RatingPOJ receivedPoj : ratingPOJList) {
-//            if (!receivedPoj.mac_address.contains(GlobalApp.source_mac)) {
-//                GlobalApp.dbHelper.insertOrUpdateRating(receivedPoj);
-//            }
-//        }
-//    }
+    private void handleRatings(List<MessageRatings> messageRatingsList) {
+        for (MessageRatings receivedRatings : messageRatingsList) {
+            GlobalApp.dbHelper.insertMessageRating(receivedRatings);
+        }
+    }
 
     private final EndpointDiscoveryCallback mEndpointDiscoveryCallback =
             new EndpointDiscoveryCallback() {

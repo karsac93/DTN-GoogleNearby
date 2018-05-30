@@ -21,6 +21,7 @@ import com.mst.karsac.R;
 import com.mst.karsac.Utils.SharedPreferencesHandler;
 import com.mst.karsac.connections.ImageMessage;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.MessageRatings;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -89,7 +90,8 @@ public class RogerActivity extends AppCompatActivity {
         my_msgs.addAll(received_msgs);
         for(Messages msg : my_msgs){
             String img_string = encodeImageBase64(msg.imgPath);
-            ImageMessage imageMessage = new ImageMessage(msg, img_string);
+            List<MessageRatings> messageRatingsList = GlobalApp.dbHelper.getRatingsMessage(msg.uuid, null);
+            ImageMessage imageMessage = new ImageMessage(msg, img_string, messageRatingsList);
             imageMessages.add(imageMessage);
         }
         return imageMessages;

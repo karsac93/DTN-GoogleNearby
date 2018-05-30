@@ -18,6 +18,7 @@ import com.mst.karsac.DbHelper.DbHelper;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.R;
 import com.mst.karsac.RatingsActivity.FinalRatingsAdapter;
+import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ public class FinalRatings extends AppCompatActivity {
     RecyclerView final_rating_view;
     FinalRatingsAdapter finalRatingsAdapter;
     TextView default_msg_txt;
-    List<HashMap> ratingsArraylist = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +45,8 @@ public class FinalRatings extends AppCompatActivity {
 
         final_rating_view = findViewById(R.id.final_ratings);
         default_msg_txt = findViewById(R.id.default_msg);
-        List<String> distinctIntermediaries = GlobalApp.dbHelper.getDistinctIntermediaries();
-        if (distinctIntermediaries.size() == 0) {
+        List<DeviceRating> deviceRatingList = GlobalApp.dbHelper.getAllDeviceRatings();
+        if (deviceRatingList.size() == 0) {
             default_msg_txt.setVisibility(View.VISIBLE);
             final_rating_view.setVisibility(View.GONE);
         } else {
@@ -54,14 +54,7 @@ public class FinalRatings extends AppCompatActivity {
             final_rating_view.setVisibility(View.VISIBLE);
         }
 
-        for(String inter : distinctIntermediaries){
-            List<MessageRatings> ratings = GlobalApp.dbHelper.getRatingsMessage(null, inter);
-            HashMap<String, List<MessageRatings>> ratingsHashMap = new HashMap<>();
-            ratingsHashMap.put(inter, ratings);
-            ratingsArraylist.add(ratingsHashMap);
-        }
-
-        finalRatingsAdapter = new FinalRatingsAdapter(ratingsArraylist, this);
+        finalRatingsAdapter = new FinalRatingsAdapter(deviceRatingList, this);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         final_rating_view.setLayoutManager(layoutManager);
         final_rating_view.setItemAnimator(new DefaultItemAnimator());

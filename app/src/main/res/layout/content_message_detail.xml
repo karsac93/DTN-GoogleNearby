@@ -27,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="5dp"
-            android:text="Source Mac Address : "
+            android:text="Unique source id : "
             android:textSize="20sp" />
 
         <TextView

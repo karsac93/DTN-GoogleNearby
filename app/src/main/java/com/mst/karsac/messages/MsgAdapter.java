@@ -59,7 +59,6 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
     public void onBindViewHolder(final MsgViewHolder holder, int position) {
         Log.d("MSG ADAP", "Inside BindViewHolder");
         final Messages msg = messagesList.get(position);
-        if (msg != null) {
             holder.fileName.setText("Filename : " + msg.fileName);
             holder.timestamp.setText("Timestamp : " + msg.timestamp);
 
@@ -74,7 +73,6 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
             holder.rating.setText("Rating : " + String.valueOf(msg.rating));
 
             Glide.with(mContext).load(new File(msg.imgPath).toString()).into(holder.thumbnail);
-        }
 
         holder.relativeLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,6 +129,7 @@ public class MsgAdapter extends RecyclerView.Adapter<MsgAdapter.MsgViewHolder> {
                 case R.id.delete:
                     DbHelper dbHelper = GlobalApp.dbHelper;
                     dbHelper.deleteMsg(msg);
+                    dbHelper.deleteMessageRatings(msg.uuid);
                     listener.callback(msg.type);
                     return true;
 

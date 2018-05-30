@@ -17,6 +17,7 @@ import com.mst.karsac.connections.MessageSerializer;
 import com.mst.karsac.connections.Mode;
 import com.mst.karsac.interest.Interest;
 import com.mst.karsac.messages.Messages;
+import com.mst.karsac.ratings.MessageRatings;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
@@ -256,7 +257,8 @@ public class ChitchatAlgo {
                     msg_send.incentive_received = 0;
                     msg_send.incentive_paid = temp_incen - incentive_obtained;
                     String msg_string = getBase64String(msg_send.imgPath);
-                    ImageMessage img_exchange = new ImageMessage(msg_send, msg_string);
+                    List<MessageRatings> messageRatingsList = GlobalApp.dbHelper.getRatingsMessage(msg_send.uuid, null);
+                    ImageMessage img_exchange = new ImageMessage(msg_send, msg_string, messageRatingsList);
                     imageList.add(img_exchange);
                 }
                 else
@@ -274,7 +276,8 @@ public class ChitchatAlgo {
                 Messages msg_send = (Messages) deepCopy(my_msg);
                 msg_send.incentive_promised = incentive_promised;
                 String msg_string = getBase64String(msg_send.imgPath);
-                ImageMessage img_exchange = new ImageMessage(msg_send, msg_string);
+                List<MessageRatings> messageRatingsList = GlobalApp.dbHelper.getRatingsMessage(msg_send.uuid, null);
+                ImageMessage img_exchange = new ImageMessage(msg_send, msg_string, messageRatingsList);
                 imageList.add(img_exchange);
             }
         }
