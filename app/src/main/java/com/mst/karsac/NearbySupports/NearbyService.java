@@ -447,7 +447,7 @@ public class NearbyService extends Service {
         public void run() {
             Log.d(TAG, "Inside Runnable searching");
             Toast.makeText(getApplicationContext(), "Searching!", Toast.LENGTH_SHORT).show();
-            Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions(Strategy.P2P_STAR));
+            Nearby.getConnectionsClient(getApplicationContext()).startDiscovery(SERVICE_ID, mEndpointDiscoveryCallback, new DiscoveryOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build());
             discoveryHandler.postDelayed(discoverRunnable, 30000);
         }
     };
@@ -458,7 +458,7 @@ public class NearbyService extends Service {
         public void run() {
             Log.d(TAG, "Inside advertiser runnable");
             Nearby.getConnectionsClient(getApplicationContext()).startAdvertising(
-                    GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions(Strategy.P2P_STAR));
+                    GlobalApp.source_mac, SERVICE_ID, mConnectionLifeCycleCallback, new AdvertisingOptions.Builder().setStrategy(Strategy.P2P_POINT_TO_POINT).build());
             advertiserHandler.postDelayed(advertiserRunnable, 30000);
         }
     };
