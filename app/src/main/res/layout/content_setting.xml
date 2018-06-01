@@ -9,40 +9,100 @@
     tools:showIn="@layout/activity_setting">
 
     <LinearLayout
-        android:layout_height="match_parent"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:padding="@dimen/settings_padding"
+            android:text="Select mode: "
+            android:textSize="20dp" />
+
+
         <RadioGroup
+            android:id="@+id/radio_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/radio_group"
             android:layout_margin="@dimen/settings_margin">
 
             <RadioButton
                 android:id="@+id/setting_push"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_push"
-                android:padding="@dimen/settings_padding"
-                android:textSize="20dp"
+                android:checked="true"
                 android:layoutDirection="rtl"
-                android:checked="true"/>
+                android:padding="@dimen/settings_padding"
+                android:text="@string/settings_push"
+                android:textSize="20dp" />
 
             <RadioButton
                 android:id="@+id/setting_pull"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_pull"
+                android:layoutDirection="rtl"
                 android:padding="@dimen/settings_padding"
-                android:textSize="20dp"
-                android:layoutDirection="rtl"/>
+                android:text="@string/settings_pull"
+                android:textSize="20dp" />
         </RadioGroup>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorAccent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:padding="@dimen/settings_padding"
+            android:text="Connection type: "
+            android:textSize="20dp" />
+
+        <RadioGroup
+            android:id="@+id/connection_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/settings_margin">
+
+            <RadioButton
+                android:id="@+id/google_nearby"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:layoutDirection="rtl"
+                android:padding="@dimen/settings_padding"
+                android:text="Google Nearby"
+                android:textSize="20dp" />
+
+            <RadioButton
+                android:id="@+id/bluetooth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layoutDirection="rtl"
+                android:padding="@dimen/settings_padding"
+                android:text="Bluetooth"
+                android:textSize="20dp" />
+        </RadioGroup>
+    </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:background="@color/colorAccent"/>
+            android:background="@color/colorAccent" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -54,36 +114,36 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:textSize="20dp"
                 android:padding="@dimen/settings_padding"
-                android:text="@string/settings_incentive"/>
+                android:text="@string/settings_incentive"
+                android:textSize="20dp" />
 
             <TextView
                 android:id="@+id/int_incentive"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
+                android:layout_marginBottom="10dp"
                 android:padding="@dimen/settings_padding"
-                android:textSize="20dp"
-                android:layout_marginBottom="10dp"/>
+                android:textSize="20dp" />
 
         </RelativeLayout>
 
         <Button
             android:id="@+id/reset_btn"
-            android:layout_marginTop="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
             android:layout_width="match_parent"
             android:layout_height="45dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
             android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground"
-            android:textColor="@android:color/white"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
             android:text="Reset all"
-            android:textSize="20sp"
-            android:layout_gravity="center_horizontal"/>
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
