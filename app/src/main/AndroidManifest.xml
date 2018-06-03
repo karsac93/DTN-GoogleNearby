@@ -87,7 +87,12 @@
             android:exported="true" />
 
         <activity android:name=".Roger.RogerActivity" />
-        <activity android:name=".RatingsActivity.FinalRatings"></activity>
+        <activity android:name=".RatingsActivity.FinalRatings" />
+
+        <service
+            android:name=".Bluetooth.BluetoothService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

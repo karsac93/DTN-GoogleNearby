@@ -84,8 +84,12 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         fab_connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(MainActivity.this, "Starting to discover and connect!", Toast.LENGTH_SHORT).show();
-                startService(intent);
+                String connection_type = SharedPreferencesHandler.
+                        getConnectionPreferences(getApplicationContext(), SharedPreferencesHandler.CONNECTION_TYPE);
+                if(connection_type.contains(SharedPreferencesHandler.NEARBY)) {
+                    Toast.makeText(MainActivity.this, "Starting to discover and connect Nearby devices!", Toast.LENGTH_SHORT).show();
+                    startService(intent);
+                }
             }
         });
 

@@ -7,8 +7,11 @@ import android.util.Log;
 
 public class SharedPreferencesHandler {
 
-    public static final String STATUS = "status";
+    public static final String CONNECTION_TYPE = "connection_type";
     public static final String LAST_IPADDRESS = "ip_address";
+    public static final String NEARBY = "nearby";
+    public static final String BLUETOOTH = "bluetooth";
+
 
     public static SharedPreferences getSharedPreferences(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context);
@@ -46,6 +49,16 @@ public class SharedPreferencesHandler {
 
     public static int getIncentive(Context context, String key) {
         return getSharedPreferences(context).getInt(key, 300);
+    }
+
+    public static void setConnectionPreferences(Context context, String key, String value) {
+        SharedPreferences.Editor editor = getSharedPreferences(context).edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    public static String getConnectionPreferences(Context context, String key) {
+        return getSharedPreferences(context).getString(key, NEARBY);
     }
 
 }
