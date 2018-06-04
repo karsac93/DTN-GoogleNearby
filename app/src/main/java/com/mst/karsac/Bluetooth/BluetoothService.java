@@ -135,7 +135,7 @@ public class BluetoothService extends Service {
                     i =0;
                 }
                 else {
-                    i = +1;
+                    i = i +1;
                 }
             }
 
