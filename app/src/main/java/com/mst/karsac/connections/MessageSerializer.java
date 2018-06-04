@@ -23,6 +23,7 @@ public class MessageSerializer implements Serializable {
     public HashMap<String, String> msgUUIDList;
     public int incentive;
     public List<DeviceRating> deviceRatingList;
+    public String bluetoothMac;
 
     public MessageSerializer(List<Interest> my_interests, String mode) {
         this.my_interests = my_interests;

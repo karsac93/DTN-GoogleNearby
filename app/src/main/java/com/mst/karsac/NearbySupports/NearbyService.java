@@ -62,6 +62,7 @@ public class NearbyService extends Service {
     static String endpointId_last;
     static long payloadId;
 
+
     private final ConnectionLifecycleCallback mConnectionLifeCycleCallback = new ConnectionLifecycleCallback() {
         @Override
         public void onConnectionInitiated(final String endpointId, ConnectionInfo connectionInfo) {
@@ -304,14 +305,14 @@ public class NearbyService extends Service {
         updateDBandSetTags(msgUUIDTags);
     }
 
-    private void updateDBandSetTags(HashMap<String, String> msgUUIDTags) {
+    public void updateDBandSetTags(HashMap<String, String> msgUUIDTags) {
         for (String msgUUID : msgUUIDTags.keySet()) {
             Log.d(TAG, "Updating modified tags");
             GlobalApp.dbHelper.updateMsgTags(msgUUID, msgUUIDTags.get(msgUUID));
         }
     }
 
-    private void UpdateDbandSetImage(List<ImageMessage> received_msgs) {
+    public void UpdateDbandSetImage(List<ImageMessage> received_msgs) {
         File imagesFolder = new File(Environment.getExternalStorageDirectory(), "DTN-Images");
         if (!imagesFolder.exists()) {
             imagesFolder.mkdirs();
@@ -374,7 +375,7 @@ public class NearbyService extends Service {
     }
 
 
-    private void handleRatings(List<MessageRatings> messageRatingsList) {
+    public void handleRatings(List<MessageRatings> messageRatingsList) {
         for (MessageRatings receivedRatings : messageRatingsList) {
             GlobalApp.dbHelper.insertMessageRating(receivedRatings);
         }

@@ -257,7 +257,7 @@ public class InboxActivity extends AppCompatActivity implements MyListener {
         @Override
         public void run() {
             try {
-                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("ffbca20f1d054a20a223c49c7d4ac4d7")
+                final ClarifaiClient clarifaiClient = new ClarifaiBuilder("acd48ae2ac944ac3bfb119dea48c159e")
                         .client(new OkHttpClient()).buildSync();
                 Log.d("hello", "Inside run");
                 activity.runOnUiThread(new Runnable() {

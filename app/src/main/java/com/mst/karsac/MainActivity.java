@@ -1,7 +1,9 @@
 package com.mst.karsac;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.android.gms.nearby.Nearby;
+import com.mst.karsac.Bluetooth.BluetoothService;
 import com.mst.karsac.NearbySupports.NearbyService;
 import com.mst.karsac.NearbySupports.StatusListener;
 import com.mst.karsac.Settings.Setting;
@@ -51,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
     private AlbumsAdapter adapter;
     private List<Album> albumList;
     FloatingActionButton fab_connect, fab_cancel;
+    private static final int REQUEST_ENABLE_BT = 3;
+    Intent intent, connectionIntent;
 
     public static final String TAG = "MainActivity";
 
@@ -79,7 +84,8 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         fab_connect = findViewById(R.id.fab_advertise);
 
-        final Intent intent = new Intent(MainActivity.this, NearbyService.class);
+        intent = new Intent(MainActivity.this, NearbyService.class);
+        connectionIntent = new Intent(MainActivity.this, BluetoothService.class);
 
         fab_connect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,8 +93,25 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
                 String connection_type = SharedPreferencesHandler.
                         getConnectionPreferences(getApplicationContext(), SharedPreferencesHandler.CONNECTION_TYPE);
                 if(connection_type.contains(SharedPreferencesHandler.NEARBY)) {
+                    stopService(connectionIntent);
                     Toast.makeText(MainActivity.this, "Starting to discover and connect Nearby devices!", Toast.LENGTH_SHORT).show();
                     startService(intent);
+                }
+                else {
+                    stopService(intent);
+                    BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    if(mBluetoothAdapter == null){
+                        Log.d(TAG, "Device does not have bluetooth feature");
+                        Toast.makeText(MainActivity.this, "No bluetooth feature in this mobile!", Toast.LENGTH_SHORT).show();
+                    }
+                    if(!mBluetoothAdapter.isEnabled()){
+                        Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+                    }
+                    else{
+                        Toast.makeText(MainActivity.this, "Starting to discover and connect nearby Bluetooth devices!", Toast.LENGTH_SHORT).show();
+                        startService(connectionIntent);
+                    }
                 }
             }
         });
@@ -99,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
             public void onClick(View view) {
                 Toast.makeText(MainActivity.this, "Stopping all the connections!", Toast.LENGTH_SHORT).show();
                 stopService(intent);
+                stopService(connectionIntent);
             }
         });
 
@@ -119,6 +143,20 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         }
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_ENABLE_BT:
+                // When the request to enable Bluetooth returns
+                if (resultCode == Activity.RESULT_OK) {
+                    // Bluetooth is now enabled, so set up a chat session
+                    Toast.makeText(MainActivity.this, "Starting to discover and connect nearby Bluetooth devices!", Toast.LENGTH_SHORT).show();
+                    stopService(intent);
+                    startService(connectionIntent);
+                }
+        }
+    }
 
     private void checkPermissions() {
         boolean flag = false;

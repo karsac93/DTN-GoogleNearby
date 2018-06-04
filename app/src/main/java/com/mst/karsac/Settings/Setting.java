@@ -25,6 +25,8 @@ import com.mst.karsac.messages.Messages;
 import com.mst.karsac.ratings.DeviceRating;
 import com.mst.karsac.ratings.MessageRatings;
 
+import java.util.logging.SocketHandler;
+
 public class Setting extends AppCompatActivity {
 
     public static final String INCENTIVE = "incentive";
@@ -37,8 +39,8 @@ public class Setting extends AppCompatActivity {
     public static final String LAT_LON_KEY = "location";
     public static final String RADIUS = "radius";
 
-    private RadioGroup radioGroup;
-    private RadioButton pushBtn, pullBtn;
+    private RadioGroup radioGroup, connectionTypeRadioGroup;
+    private RadioButton pushBtn, pullBtn, nearby, bluetooth;
     TextView int_incentive;
     Button resetBtn;
 
@@ -50,7 +52,7 @@ public class Setting extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if(Build.VERSION.SDK_INT >= 21){
+        if (Build.VERSION.SDK_INT >= 21) {
             Window window = this.getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -71,6 +73,9 @@ public class Setting extends AppCompatActivity {
         pullBtn = findViewById(R.id.setting_pull);
         int_incentive = findViewById(R.id.int_incentive);
         resetBtn = findViewById(R.id.reset_btn);
+        connectionTypeRadioGroup = findViewById(R.id.connection_group);
+        nearby = findViewById(R.id.google_nearby);
+        bluetooth = findViewById(R.id.bluetooth);
 
         resetBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,10 +114,26 @@ public class Setting extends AppCompatActivity {
                         Log.d(TAG, "Pull has not been set at all, so firing it");
                         Intent intent = new Intent(Setting.this, PullActivity.class);
                         startActivity(intent);
-                    }
-                    else{
+                    } else {
                         SharedPreferencesHandler.setStringPreferences(getApplicationContext(), MODE_SELECTION, PULL);
                     }
+                }
+            }
+        });
+
+        String connectionType = SharedPreferencesHandler.getConnectionPreferences(getApplicationContext(), SharedPreferencesHandler.CONNECTION_TYPE);
+        if (connectionType.equals(SharedPreferencesHandler.NEARBY))
+            nearby.setChecked(true);
+        else
+            bluetooth.setChecked(true);
+
+        connectionTypeRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int checkId) {
+                if (checkId == R.id.google_nearby) {
+                    SharedPreferencesHandler.setConnectionPreferences(getApplicationContext(), SharedPreferencesHandler.CONNECTION_TYPE, SharedPreferencesHandler.NEARBY);
+                } else {
+                    SharedPreferencesHandler.setConnectionPreferences(getApplicationContext(), SharedPreferencesHandler.CONNECTION_TYPE, SharedPreferencesHandler.BLUETOOTH);
                 }
             }
         });
