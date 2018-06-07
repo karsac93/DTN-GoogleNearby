@@ -1,7 +1,7 @@
 # DTN
 Project to include various material design features and implement Delay Tolerant Network using Google Nearby connections API and Bluetooth
 
-<img src="images/homescreen.png" width="100" height="150"/>
+<img src="images/homescreen.png" width="200" height="400"/>
 Homescreen, which allows users to choose actions like checking out neighbours with this app, create messages or check received messages, Modify interest (based on which they receive messages in a P2P environment)
 
 An activity to handle messages, users can either choose from gallery or take a photo by using floating action buttons
