@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.mst.karsac.Algorithm.ChitchatAlgo;
 import com.mst.karsac.GlobalApp;
 import com.mst.karsac.connections.MessageSerializer;
+import com.mst.karsac.messages.Messages;
 import com.mst.karsac.ratings.DeviceRating;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class BluetoothService extends Service {
-    static int i=0;
+    static int i = 0;
     private static final String NAME_INSECURE = "BluetoothChatInsecure";
     public static final String TAG = "BluetoothService";
     private BluetoothAdapter mBtAdapter;
@@ -80,6 +81,9 @@ public class BluetoothService extends Service {
 
     @Override
     public void onDestroy() {
+        mState = false;
+        first_check = false;
+        check_completed = false;
         connectedDevices.clear();
         mNewDevicesList.clear();
         synchronized (BluetoothService.this) {
@@ -128,14 +132,14 @@ public class BluetoothService extends Service {
                 mNewDevicesList.clear();
                 mBtAdapter.startDiscovery();
                 check_completed = true;
-                discoverBondedAndNewhandler.postDelayed(findAndNewDevicesRunnable, 40000);
-            }else{
-                if(i > 1){
+                discoverBondedAndNewhandler.postDelayed(findAndNewDevicesRunnable, 45000);
+            } else {
+                if (i > 2) {
                     check_completed = false;
-                    i =0;
-                }
-                else {
-                    i = i +1;
+                    mState = false;
+                    i = 0;
+                } else {
+                    i = i + 1;
                 }
             }
 
@@ -172,13 +176,12 @@ public class BluetoothService extends Service {
                 Log.d(TAG, "Finished Discovery!" + mNewDevicesList.size());
                 if (mState == false) {
                     if (mNewDevicesList.size() > 0) {
-                       for(BluetoothDevice device : mNewDevicesList) {
-                           startConnection(device);
-                           break;
-                       }
+                        for (BluetoothDevice device : mNewDevicesList) {
+                            startConnection(device);
+                            break;
+                        }
                     }
-                }
-                else{
+                } else {
                     Log.d(TAG, "mstate is true in receiver");
                 }
             }
@@ -252,6 +255,9 @@ public class BluetoothService extends Service {
                                 Log.d(TAG, "client inside message mode");
                                 showToast("File Transfer complete!", getBaseContext());
                                 new BluetoothHelper().handleImages(receivedObj, getApplicationContext());
+                                ArrayList<Messages> tobeUpdated = ChitchatAlgo.getToBeUpdated();
+                                for (Messages msg : tobeUpdated)
+                                    GlobalApp.dbHelper.updateMsg(msg);
                                 MessageSerializer receivedMessage = new MessageSerializer(MessageSerializer.RECEIVED_MODE);
                                 sendMessage(receivedMessage, mmSocket);
                                 synchronized (BluetoothService.this) {
@@ -268,14 +274,14 @@ public class BluetoothService extends Service {
                     discoverBondedAndNewhandler.post(findAndNewDevicesRunnable);
                 }
             } catch (Exception e) {
-                if(in != null){
+                if (in != null) {
                     try {
                         in.close();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                 }
-                if(ois != null){
+                if (ois != null) {
                     try {
                         ois.close();
                     } catch (IOException e1) {
@@ -296,10 +302,10 @@ public class BluetoothService extends Service {
                     mState = false;
                 }
                 if (mState == false && mNewDevicesList.size() > 0) {
-                    for(BluetoothDevice device : mNewDevicesList)
-                    if (!connectedDevices.contains(device.getAddress())) {
-                        startConnection(device);
-                    }
+                    for (BluetoothDevice device : mNewDevicesList)
+                        if (!connectedDevices.contains(device.getAddress())) {
+                            startConnection(device);
+                        }
                 } else {
                     discoverBondedAndNewhandler.post(findAndNewDevicesRunnable);
                 }
@@ -386,6 +392,9 @@ public class BluetoothService extends Service {
 
                         case MessageSerializer.RECEIVED_MODE:
                             Log.d(TAG, "Received all messages");
+                            ArrayList<Messages> tobeUpdated = ChitchatAlgo.getToBeUpdated();
+                            for (Messages msg : tobeUpdated)
+                                GlobalApp.dbHelper.updateMsg(msg);
                             connState = "completed";
                             showToast("File Transfer complete!", getBaseContext());
                             in.close();
@@ -411,14 +420,14 @@ public class BluetoothService extends Service {
                 if (connState.length() > 0)
                     mState = false;
                 mNewDevicesList.clear();
-                if(in != null) {
+                if (in != null) {
                     try {
                         in.close();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                 }
-                if(ois != null){
+                if (ois != null) {
                     try {
                         ois.close();
                     } catch (IOException e1) {
@@ -445,24 +454,27 @@ public class BluetoothService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (first_check == true) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-                mBtAdapter = manager.getAdapter();
-            } else {
-                mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-            }
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            this.registerReceiver(mReceiver, filter);
-            filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-            this.registerReceiver(mReceiver, filter);
-            macAddress = mBtAdapter.getAddress();
-            Log.d(TAG, "My mac address:" + macAddress);
-            mAcceptThread = new AcceptThread(this);
-            mAcceptThread.start();
-            discoverHandler.post(discoverRunnable);
-            discoverBondedAndNewhandler.post(findAndNewDevicesRunnable);
-        }
+//        if (first_check == true) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+//                BluetoothManager manager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+//                mBtAdapter = manager.getAdapter();
+//            } else {
+//                mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+//            }
+//            boolean mState = false;
+//            first_check = false;
+//            boolean check_completed = false;
+//            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+//            this.registerReceiver(mReceiver, filter);
+//            filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+//            this.registerReceiver(mReceiver, filter);
+//            macAddress = mBtAdapter.getAddress();
+//            Log.d(TAG, "My mac address:" + macAddress);
+//            mAcceptThread = new AcceptThread(this);
+//            mAcceptThread.start();
+//            discoverHandler.post(discoverRunnable);
+//            discoverBondedAndNewhandler.post(findAndNewDevicesRunnable);
+//        }
         first_check = true;
         return START_NOT_STICKY;
     }
