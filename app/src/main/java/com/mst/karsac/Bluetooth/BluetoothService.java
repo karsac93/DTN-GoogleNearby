@@ -42,6 +42,7 @@ public class BluetoothService extends Service {
     private static List<String> connectedDevices = new ArrayList();
     private Set<BluetoothDevice> mNewDevicesList = new HashSet<BluetoothDevice>() {
     };
+    BluetoothDevice lastConnectedDevice;
     String macAddress;
     public static final UUID MY_UUID_INSECURE = UUID.fromString("00000000-0000-1000-8000-00805F9B34FB");
     private ConnectThread mConnectThread;
@@ -177,7 +178,9 @@ public class BluetoothService extends Service {
                 if (mState == false) {
                     if (mNewDevicesList.size() > 0) {
                         for (BluetoothDevice device : mNewDevicesList) {
-                            startConnection(device);
+                            if (!connectedDevices.contains(device.getAddress())) {
+                                startConnection(device);
+                            }
                             break;
                         }
                     }
@@ -269,6 +272,7 @@ public class BluetoothService extends Service {
                         if (flag)
                             break;
                     }
+                    lastConnectedDevice = mmDevice;
                     mState = false;
                     mNewDevicesList.clear();
                     discoverBondedAndNewhandler.post(findAndNewDevicesRunnable);

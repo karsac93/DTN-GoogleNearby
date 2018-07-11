@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -83,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements StatusListener{
         GlobalApp.mainActivityContext = this;
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         fab_connect = findViewById(R.id.fab_advertise);
-
         intent = new Intent(MainActivity.this, NearbyService.class);
         connectionIntent = new Intent(MainActivity.this, BluetoothService.class);
 

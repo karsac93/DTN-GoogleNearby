@@ -68,12 +68,13 @@ public class NearbyService extends Service {
         public void onConnectionInitiated(final String endpointId, ConnectionInfo connectionInfo) {
             Log.d(TAG, connectionInfo.getEndpointName());
             check_connected = true;
+
             String endpointName = connectionInfo.getEndpointName();
             if (connectionInfo.isIncomingConnection()) {
                 Log.d(TAG, "True**************");
                 isClient = true;
             }
-            if (endpointName.length() == 36) {
+            if (endpointName.length() > 0) {
                 Log.d(TAG, "old device and connected device:" + lastdeviceEndpoint + " new device:" + connectionInfo.getEndpointName());
                 Log.d(TAG, "Accepting connection");
 
