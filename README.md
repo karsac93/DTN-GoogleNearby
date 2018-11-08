@@ -1,5 +1,5 @@
 # DTN
-Project to include various material design features and implement Delay Tolerant Network using Google Nearby connections API and Bluetooth. This based on IEEE paper "ChitChat: An Effective Message Delivery Method in Sparse Pocket-Switched Networks"
+Project to include various material design features and implement Delay Tolerant Network using Google Nearby connections API and Bluetooth. This based on IEEE paper "ChitChat: An Effective Message Delivery Method in Sparse Pocket-Switched Networks". The apk is available in APK folder and the app works from Kitkat to Lollipop android devices
 
 <img src="images/homescreen1.png" width="250" height="400"/>
 
